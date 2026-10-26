@@ -1,6 +1,6 @@
 # repo-defaults agent guide
 
-This repo holds the rules and tooling that other repos include as a git submodule at `repo-defaults/` or as a git dependency. Follow [writing.md](writing.md) and [typescript.md](typescript.md) here too. [README.md](README.md) shows how a repo includes each file. Log a choice the docs don't settle in [decisions.md](decisions.md).
+This repo holds the rules and tooling that other repos include as a git submodule at `repo-defaults/` or as a git dependency. Follow [writing.md](writing.md), [typescript.md](typescript.md), [principles.md](principles.md), and [workflow.md](workflow.md) here too. [README.md](README.md) shows how a repo includes each file. Log a choice the docs don't settle in [decisions.md](decisions.md).
 
 ## Commands
 

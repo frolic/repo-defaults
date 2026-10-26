@@ -15,7 +15,26 @@ Follow these rules in every TypeScript repo that includes repo-defaults. Most of
 - A helper that throws for an invalid value and otherwise returns nothing or the same value is named `assert*`, such as `assertSize` and `assertUint8Array`. A helper that also changes the value, such as trimming it or converting a domain to its A-label, is named for the change: `normalizeName`, `formatAddress`.
 - Use classes only for errors and for subclasses of platform types, such as a `TransformStream` subclass.
 - Named exports only (`import/no-default-export`). A config file or an oxlint plugin that must export a default is the exception.
-- Public functions, classes, and constants have JSDoc with an `@example`. Exported types have JSDoc without one, because the function that takes or returns the type already shows it in use. Other comments are rare: write one only when the code can't say why, and run the `no-comments` skill before you finish a change.
+- Public functions, classes, and constants have JSDoc with an `@example`. Exported types have JSDoc without one, because the function that takes or returns the type already shows it in use.
+- Pure functions where possible. Return early. No type casts.
+
+## Comments
+
+Code explains itself through names, types, and small functions. A comment stays only if it is one of these:
+
+- a doc comment that states the contract of an export, such as a unit, a limit, or what a caller must do
+- a behavior forced by something you can't change, such as a browser, a database, WebCrypto, or a protocol
+- a lint suppression with its reason
+- a link to an issue
+
+A comment that explains your own code is a sign the code needs a better name or shape. Fix the code and delete the comment. The `comment-sicko` agent applies this rule, and the `no-comments` skill runs it on a scope.
+
+## Files and names
+
+- One export per file, and the file has its name. A test sits next to its file (`foo.test.ts` beside `foo.ts`).
+- No `utils/` folders. Files stay flat in `src/` until a feature's files are used only by that feature, and then a folder named for the feature holds them. A folder never holds one kind of file (`components/`, `hooks/`, `types/`).
+- Use full names: `entity`, `attribute`, `page`, not `e`, `attr`, `pg`. A name says what the caller gets, in plain words and the words of the repo's docs.
+- A timestamp's name ends in `At` (`addedAt`, `expiresAt`). A boolean that describes something starts with `is` or `has` (`isOnline`, `hasPasskey`). A flag that asks for an action is a verb (`compress`, `discard`).
 
 ## API shape
 

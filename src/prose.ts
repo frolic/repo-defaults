@@ -248,3 +248,16 @@ export declare namespace check {
     skip?: Partial<Record<Rule, readonly string[]>> | undefined;
   };
 }
+
+/**
+ * Returns the number of words in `file`, counted as runs of text between whitespace. A test can
+ * cap a doc's length with it, so the doc grows only when someone raises the cap on purpose.
+ *
+ * @example
+ * expect(countWords(join(root, 'docs/design.md'))).toBeLessThanOrEqual(10_000);
+ */
+export function countWords(file: string): number {
+  return readFileSync(file, 'utf8')
+    .split(/\s+/)
+    .filter((word) => word !== '').length;
+}

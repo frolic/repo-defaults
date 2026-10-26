@@ -3,6 +3,7 @@
 Follow these rules in every repo that includes repo-defaults. Read the `technical-writing` and `unslop` skills before you write docs, READMEs, code comments, JSDoc, commit messages, or PR titles and bodies. These rules apply to all of them.
 
 - Write the way you'd explain it to another engineer: in plain, specific words that keep the detail and the reason.
+- Write for a person who reads quickly. Lead with the effect, give one concrete example or number, and cut words that only make sense to the person who built the change.
 - Use the name that already exists: the symbol in the code, or a standard term a reader knows without looking it up (compare-and-swap, idempotent, B-tree). Don't paraphrase a known idea in a long clause, and don't swap detail for jargon either.
 - Prefer the short phrase: "a missing blob", not "a blob that the bucket does not hold".
 - Use literal verbs. "Is accepted" or "is stored", never figurative verbs such as "lands", "names", "absorbs", "wins", "rides along", or "stands on", or figurative nouns such as "seam". Don't personify code: a poll "needs" a deadline, it doesn't "want" one.
@@ -58,6 +59,28 @@ Each row of this table is a pattern to avoid, not only the one sentence. When yo
 | An option you leave out keeps its current value. (The option is made the actor.) | It changes only the options you pass. |
 | A forwarder, such as a mailing list, validates the chain that arrived and seals the message. (A made-up actor carries the advice.) | If you forward mail, as a mailing list does, verify the chain that arrived and seal the message. |
 | Stripe's `stripe` package has separate builds … Errors extend the classes in `@acme/errors`. | Stripe's stripe package has separate builds … Errors extend the classes in @acme/errors. |
+| A write lands only when each slot it changes still holds the version it saw | A write is accepted only if every slot it changes is still at the version the writer read. |
+| Every key names its scheme. | Each key stores its signature algorithm. |
+| A page seal that binds the id names one page. | A page seal that binds the id identifies one page. |
+| A change to who reads whom lands once the host takes it. | A change to who reads whom counts only once the host accepts it. |
+| A head is what a reader follows. | A reader follows the head. |
+
+## Docs
+
+- The code and `docs/` are the source of truth. A decision made in a chat or a pull request moves into `docs/`.
+- `docs/` and the READMEs describe the present. Reasons and history go in commit messages.
+- A change that makes a doc or a README wrong fixes it in the same commit.
+- `docs/proposals/` holds a plan that isn't built yet. As each step is built, its part moves into the other docs and leaves the plan.
+
+## Pull requests
+
+Write a pull request that asks for review so a person who hasn't seen the code or the thread can approve it from the text alone.
+
+- The title says what changes in plain words ("Adding a member reads only the new member's record"), not which function changed.
+- The body has short sections: what changes, the trade-off, the other option, and the tests. It ends with one direct question.
+- "What changes" leads with the effect on a person or an app, with a concrete number where one exists ("1 read, not 4").
+- Name a function or a file only where the reviewer needs it to check the change. Describe the behavior, not the code path.
+- Leave out internal ids (plan items, review rounds), test file names, timing logs, and how the change was built. These go in the commit message, or nowhere.
 
 ## Prose review
 

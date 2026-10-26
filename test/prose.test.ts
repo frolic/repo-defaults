@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { expect, test } from 'vite-plus/test';
 import {
   check,
+  countWords,
   findCodePackageName,
   findMadeUpActor,
   findMissingSerialComma,
@@ -55,6 +56,12 @@ test('check reports each rule with its file and line', () => {
     { file: 'notes.md', line: 2, rule: 'serial-comma', text: 'It reads `a`, `b` and `c`' },
     { file: 'notes.md', line: 4, rule: 'code-package-name', text: '`@scope/lines`' },
   ]);
+});
+
+test('countWords counts the runs of text between whitespace', () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'words-')), 'doc.md');
+  writeFileSync(file, '# Title\n\nTwo  words.\n');
+  expect(countWords(file)).toBe(4);
 });
 
 test('findMadeUpActor finds an app, caller, or user that acts', () => {

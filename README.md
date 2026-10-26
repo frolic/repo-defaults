@@ -9,7 +9,9 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 **Rules for agents and people**
 
 - [writing.md](writing.md): docs, comments, commit messages, and PR text, with a table of sentences to avoid.
-- [typescript.md](typescript.md): TypeScript style and API shape.
+- [typescript.md](typescript.md): TypeScript style, API shape, comments, and file names.
+- [principles.md](principles.md): how to design a change.
+- [workflow.md](workflow.md): pull requests, commits, and agent work.
 
 **Config**
 
@@ -20,13 +22,13 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 
 **Checks and commands**
 
-- `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, and a package name in a code span.
+- `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, and a package name in a code span, and counts a doc's words for a length cap.
 - `check-commit-message`: runs two of those checks on a commit message.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 
 **Skills**
 
-- `skills/`: skills written here, such as `prose-review`.
+- `skills/`: `prose-review`, `pr-review`, `codebase-review`, and `walkthrough`.
 - `vendor/`: whole skill sets from [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock](https://github.com/mattpocock/skills), and [HumanLayer](https://github.com/humanlayer/skills), copied unchanged with git subtree.
 - `vendor.json`: where each set comes from, its upstream commit, and the skills linked by default.
 

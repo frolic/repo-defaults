@@ -70,12 +70,14 @@ In CLAUDE.md, so Claude Code loads the rules as project instructions:
 @AGENTS.md
 @repo-defaults/writing.md
 @repo-defaults/typescript.md
+@repo-defaults/principles.md
+@repo-defaults/workflow.md
 ```
 
 Near the top of AGENTS.md, for agents that don't follow imports:
 
 ```md
-Follow the rules in repo-defaults/writing.md and repo-defaults/typescript.md. They apply to every change in this repo.
+Follow the rules in repo-defaults/writing.md, repo-defaults/typescript.md, repo-defaults/principles.md, and repo-defaults/workflow.md. They apply to every change in this repo.
 ```
 
 ## 5. Skills
@@ -109,7 +111,7 @@ test('the prose follows writing.md', () => {
 });
 ```
 
-Pass `tables` for files whose tables quote sentences to avoid in the first column, and `skip` to leave a file out of one rule.
+Pass `tables` for files whose tables quote sentences to avoid in the first column, and `skip` to leave a file out of one rule. To cap a doc's length, test `countWords(file)` against a number you lower as the doc shrinks.
 
 ## 7. Commit messages
 
