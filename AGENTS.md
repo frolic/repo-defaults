@@ -9,7 +9,7 @@ This repo holds the rules and tooling that other repos include as a git submodul
 | `pnpm check` | Format with oxfmt, lint with oxlint, and type-check, fixing what it can (`vp check --fix`). |
 | `pnpm check:types` | `tsc -p tsconfig.json` over `src/` and `test/`. |
 | `pnpm test` | The rule tests, the prose checks over this repo, and the `link-skills` test. |
-| `pnpm prepare` | Builds `dist/` with `tsconfig.build.json`. `pnpm install` runs it, and so does pnpm when it installs this repo as a git dependency. |
+| `pnpm build` | Builds `dist/` with `tsconfig.build.json`. Commit `dist/` with the change to `src/`, because a git dependency uses it. `test/dist.test.ts` fails when `dist/` doesn't match a fresh build. |
 
 ## Rules for this repo
 

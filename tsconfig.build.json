@@ -7,7 +7,9 @@
     "outDir": "dist",
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    "isolatedDeclarations": false
+    "isolatedDeclarations": false,
+    "sourceMap": false,
+    "declarationMap": false
   },
   "include": ["src"]
 }

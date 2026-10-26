@@ -38,12 +38,7 @@ As a git dependency:
 pnpm add -D github:frolic/repo-defaults
 ```
 
-pnpm runs the `prepare` script to build `dist/`, so allow it in `pnpm-workspace.yaml`:
-
-```yaml
-allowBuilds:
-  repo-defaults: true
-```
+The built JavaScript in `dist/` is committed, so the install runs no build script.
 
 The rest of this section shows the submodule paths. With the git dependency, use package paths such as `repo-defaults/oxc` instead of file paths such as `./repo-defaults/src/oxc.ts`, and `node_modules/repo-defaults/` for the Markdown files and skills.
 

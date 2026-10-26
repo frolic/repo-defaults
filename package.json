@@ -9,7 +9,7 @@
     "url": "git+https://github.com/frolic/repo-defaults.git"
   },
   "scripts": {
-    "prepare": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "check": "vp check --fix",
     "check:types": "tsc -p tsconfig.json",
     "test": "vp test run"
