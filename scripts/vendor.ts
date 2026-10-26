@@ -39,7 +39,10 @@ function writeManifest(sources: Record<string, Source>, message: string) {
 // Clones the source and returns the clone, the branch to pull from it, and the upstream commit.
 function fetch(source: Pick<Source, 'repo' | 'ref' | 'path'>) {
   const dir = mkdtempSync(join(tmpdir(), 'vendor-'));
-  git(['clone', '--quiet', '--no-checkout', '--branch', source.ref, source.repo, dir]);
+  // `git subtree split` checks that the directory exists in the working tree, so only a clone
+  // without --path can skip the checkout.
+  const checkout = source.path === undefined ? ['--no-checkout'] : [];
+  git(['clone', '--quiet', ...checkout, '--branch', source.ref, source.repo, dir]);
   const commit = git(['rev-parse', 'HEAD'], dir);
   if (source.path === undefined) {
     return { dir, branch: source.ref, commit };
