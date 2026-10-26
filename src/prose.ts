@@ -89,9 +89,9 @@ export function findRuledOutWord(line: string): string | undefined {
   return ruledOut.exec(line.replaceAll(/\x60[^\x60]*\x60/g, '').replaceAll(/"[^"]*"/g, ''))?.[0];
 }
 
-// Finds a package name in a code span: a scoped name such as `@portable/streams`, a name followed
+// Finds a package name in a code span: a scoped name such as `@acme/streams`, a name followed
 // by "package", as in "the `ws` package", or a link to a package page with the name as its text.
-// Package names are plain text in prose. A subpath such as `@portable/streams/node` is an import
+// Package names are plain text in prose. A subpath such as `@acme/streams/node` is an import
 // specifier, so it stays code. Text in double quotes is skipped, so a rule can quote the pattern.
 const codePackage =
   /\x60@[a-z0-9-]+\/[a-z0-9._-]+\x60|\x60[@a-z0-9._/-]+\x60 packages?\b|\[\x60([a-z0-9-]+)\x60\]\((?:\/packages\/|\.\.\/)\1\b/;

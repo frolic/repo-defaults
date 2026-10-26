@@ -16,12 +16,12 @@ Choices made in this repo, with the options considered and the reason for each. 
 
 ## The oxlint rules use the `defaults/` prefix
 
-- **Options:** keep `portable/`; `repo-defaults/`; `defaults/`.
-- **Trade-offs:** `portable/` is wrong outside Portable, and `repo-defaults/` is long in every rule name and `oxlint-disable` comment.
-- **Chosen:** `defaults/`. A repo that adds its own rules uses its own prefix, as Portable keeps `portable/error-kind` and `portable/no-private-symbol`.
+- **Options:** `repo-defaults/`; `defaults/`.
+- **Trade-offs:** `repo-defaults/` is long in every rule name and `oxlint-disable` comment.
+- **Chosen:** `defaults/`. A repo that adds its own rules uses its own prefix.
 
-## Portable's package rules stay in Portable
+## Only rules that don't depend on what a repo builds are here
 
-- **Options:** move every rule in Portable's AGENTS.md; move only the rules that don't mention packages, runtimes, or @portable/* packages.
-- **Trade-offs:** the WinterTC API rules, the package layout, and the test layout only make sense in a repo of runtime-agnostic packages. The writing rules and the TypeScript style don't depend on what the repo builds.
-- **Chosen:** writing.md takes the Writing section, and typescript.md takes the Code style section and the API conventions that don't depend on Portable's packages.
+- **Options:** include rules about a repo's packages, runtimes, and test layout; include only rules that any TypeScript repo can follow.
+- **Trade-offs:** rules such as "use only the WinterTC API" or "each entry point is a file in `src/exports/`" only make sense in one kind of repo. Writing rules and TypeScript style don't depend on what the repo builds.
+- **Chosen:** writing.md and typescript.md hold only the general rules. A repo keeps its own rules in its AGENTS.md.

@@ -64,18 +64,18 @@ test('findMadeUpActor finds an app, caller, or user that acts', () => {
 });
 
 test('findCodePackageName finds package names and skips subpaths', () => {
-  expect(findCodePackageName('Errors extend the classes in `@portable/errors`.')).toBe(
-    '`@portable/errors`',
+  expect(findCodePackageName('Errors extend the classes in `@acme/errors`.')).toBe(
+    '`@acme/errors`',
   );
   expect(findCodePackageName('It takes `@noble/hashes` as a peer.')).toBe('`@noble/hashes`');
   expect(findCodePackageName("Pass the `ws` package's class.")).toBe('`ws` package');
   expect(findCodePackageName('- [`lines`](/packages/lines) splits bytes.')).toBe(
     '[`lines`](/packages/lines',
   );
-  expect(findCodePackageName('Import `@portable/streams/node` in Node.')).toBeUndefined();
+  expect(findCodePackageName('Import `@acme/streams/node` in Node.')).toBeUndefined();
   expect(findCodePackageName('The [`Spf.check`](../spf/README.md) result.')).toBeUndefined();
-  expect(findCodePackageName('Never write "`@portable/errors`".')).toBeUndefined();
-  expect(findCodePackageName('Errors extend the classes in @portable/errors.')).toBeUndefined();
+  expect(findCodePackageName('Never write "`@acme/errors`".')).toBeUndefined();
+  expect(findCodePackageName('Errors extend the classes in @acme/errors.')).toBeUndefined();
 });
 
 test('findRuledOutWord skips code spans and quotations', () => {
