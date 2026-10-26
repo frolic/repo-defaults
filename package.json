@@ -1,0 +1,81 @@
+{
+  "name": "repo-defaults",
+  "description": "Writing rules, TypeScript style, tsconfig presets, lint and format settings, prose checks, and agent skills to share across repos.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frolic/repo-defaults.git"
+  },
+  "scripts": {
+    "prepare": "tsc -p tsconfig.build.json",
+    "check": "vp check --fix",
+    "check:types": "tsc -p tsconfig.json",
+    "test": "vp test run"
+  },
+  "files": [
+    "dist",
+    "src",
+    "tsconfig",
+    "skills",
+    "vendor",
+    "writing.md",
+    "typescript.md"
+  ],
+  "bin": {
+    "check-commit-message": "./dist/commitMessage.js",
+    "link-skills": "./dist/linkSkills.js"
+  },
+  "exports": {
+    "./oxc": {
+      "src": "./src/oxc.ts",
+      "types": "./dist/oxc.d.ts",
+      "default": "./dist/oxc.js"
+    },
+    "./oxlint": {
+      "src": "./src/oxlint.ts",
+      "types": "./dist/oxlint.d.ts",
+      "default": "./dist/oxlint.js"
+    },
+    "./prose": {
+      "src": "./src/prose.ts",
+      "types": "./dist/prose.d.ts",
+      "default": "./dist/prose.js"
+    },
+    "./tsconfig/strict.json": "./tsconfig/strict.json",
+    "./tsconfig/library.json": "./tsconfig/library.json",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.88.0",
+    "typescript": ">=6.0.3",
+    "vite-plus": ">=1.3.0",
+    "oxfmt": ">=0.73.0"
+  },
+  "peerDependenciesMeta": {
+    "oxlint": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    },
+    "vite-plus": {
+      "optional": true
+    },
+    "oxfmt": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0",
+    "typescript": "^6.0.3",
+    "vite-plus": "1.3.0"
+  },
+  "packageManager": "pnpm@11.28.6"
+}
