@@ -18,7 +18,8 @@ The files work two ways without a build step on your side: as a git submodule at
 | `src/commitMessage.ts` | `check-commit-message`, which runs two of the prose checks on a commit message. |
 | `src/linkSkills.ts` | `link-skills`, which links the skills and agents into `.claude/` and `.agents/`. |
 | `skills/` | Skills written here, such as `prose-review`. |
-| `vendor/pstack/` | Skills and the `comment-sicko` agent copied unchanged from [pstack](https://github.com/cursor/plugins/tree/main/pstack). |
+| `vendor/` | Other repos' skill sets, copied unchanged with git subtree: [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock's skills](https://github.com/mattpocock/skills), and [HumanLayer's skills](https://github.com/humanlayer/skills). |
+| `vendor.json` | Where each vendored repo comes from, the upstream commit it's at, and which of its skills and agents `link-skills` links by default. |
 
 ## Add it to a repo
 
@@ -93,6 +94,15 @@ node repo-defaults/src/linkSkills.ts
 
 With the git dependency, run `pnpm exec link-skills`. It creates relative links at `.claude/skills/<name>` and `.agents/skills/<name>`, and links the agents into `.claude/agents/` and `.agents/agents/`. It leaves alone any skill your repo keeps as a real folder, so a repo can replace one.
 
+By default it links everything in `skills/` and the skills and agents in each `link` list in `vendor.json`, which today are the pstack skills that Portable used. Every vendored skill is in the repo, so you can try any of the others by naming it:
+
+```sh
+node repo-defaults/src/linkSkills.ts --list
+node repo-defaults/src/linkSkills.ts grill-me humanlayer-skills/rpi
+```
+
+Write `<source>/<skill>` when two sources have a skill with the same name, as pstack and Matt Pocock's skills both have `teach`. To keep a repo's picks, put the command in a script in its package.json.
+
 ### Prose checks
 
 Run `check` from a test, so it runs with the rest of your tests:
@@ -127,6 +137,19 @@ Edit the files in `repo-defaults/` and try them in the host repo. Then make two 
 
 With the git dependency, push the change here and run `pnpm update repo-defaults` in the host repo.
 
+## Vendor another repo
+
+`pnpm vendor` copies a repo, or one directory of it, into `vendor/<name>` with git subtree and records it in `vendor.json`. Run it in a clean working tree, because git subtree commits.
+
+```sh
+pnpm vendor add humanlayer-skills https://github.com/humanlayer/skills
+pnpm vendor add pstack https://github.com/cursor/plugins --path pstack
+pnpm vendor update
+pnpm vendor update pstack
+```
+
+`add` takes `--ref` for a branch other than `main`, and `--path` to vendor only one directory. `update` pulls the newest upstream commit of each source, or of the ones you name, as one squashed commit, and records the commit in `vendor.json`. To link a vendored skill by default, add its path to that source's `link.skills` in `vendor.json`. Don't edit the files under `vendor/<name>`, so each update applies cleanly.
+
 ## Development
 
 ```sh
@@ -140,4 +163,4 @@ Node 24 or later runs the TypeScript files directly. See [AGENTS.md](AGENTS.md) 
 
 ## License
 
-MIT. The files in `vendor/pstack/` keep their own MIT license.
+MIT. Each repo in `vendor/` keeps its own license.

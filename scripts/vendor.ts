@@ -20,7 +20,8 @@ type Source = {
   link: { skills: string[]; agents: string[] };
 };
 
-const root = join(import.meta.dirname, '..');
+// Run from the repo root, as `pnpm vendor` does.
+const root = process.cwd();
 const manifest = join(root, 'vendor.json');
 
 const git = (args: readonly string[], cwd = root) =>
@@ -66,7 +67,9 @@ if (command === 'add') {
     return index === -1 ? undefined : args[index + 1];
   };
   if (name === undefined || repo === undefined) {
-    throw new Error('Usage: node scripts/vendor.ts add <name> <repo> [--ref <branch>] [--path <dir>]');
+    throw new Error(
+      'Usage: node scripts/vendor.ts add <name> <repo> [--ref <branch>] [--path <dir>]',
+    );
   }
   assertClean();
   const sources = readManifest();

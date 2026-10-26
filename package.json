@@ -22,7 +22,8 @@
     "skills",
     "vendor",
     "writing.md",
-    "typescript.md"
+    "typescript.md",
+    "vendor.json"
   ],
   "bin": {
     "check-commit-message": "./dist/commitMessage.js",

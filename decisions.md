@@ -2,6 +2,12 @@
 
 Choices made in this repo, with the options considered and the reason for each. Newest first.
 
+## Other repos' skills are vendored with git subtree
+
+- **Options:** copy the files by hand and record the commit; a git submodule per repo; git subtree.
+- **Trade-offs:** a hand copy is slow to update and easy to get wrong. GitHub's tarballs leave out submodules, so a git dependency on this repo would install empty `vendor/` folders, and a host repo that uses this one as a submodule would need `--recursive` everywhere. git subtree stores the files as ordinary files, so both setups get them, and `git subtree pull` updates them. Splitting cursor/plugins down to `pstack/` keeps the other plugins in that repo out of this one.
+- **Chosen:** git subtree with `--squash`, run by `pnpm vendor`, which also records each source and its upstream commit in `vendor.json`. Every skill in a source is vendored, and `link-skills` links only the ones in `vendor.json`'s `link` lists, plus any named on its command line, because each linked skill's description is loaded into every session.
+
 ## The built JavaScript in `dist/` is committed
 
 - **Options:** ship only TypeScript; build `dist/` in a `prepare` script when pnpm installs the git dependency; commit `dist/`.

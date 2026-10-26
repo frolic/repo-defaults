@@ -5,8 +5,35 @@
     "path": "pstack",
     "commit": "99b609a72323b70204eab407c622f436e858e112",
     "link": {
-      "skills": [],
-      "agents": []
+      "skills": [
+        "skills/architect",
+        "skills/benchmark-checklist",
+        "skills/blast-radius",
+        "skills/correct",
+        "skills/how",
+        "skills/interrogate",
+        "skills/no-comments",
+        "skills/principle-boundary-discipline",
+        "skills/principle-encode-lessons-in-structure",
+        "skills/principle-explain-the-number",
+        "skills/principle-fix-root-causes",
+        "skills/principle-foundational-thinking",
+        "skills/principle-laziness-protocol",
+        "skills/principle-migrate-callers-then-delete-legacy-apis",
+        "skills/principle-minimize-reader-load",
+        "skills/principle-model-the-domain",
+        "skills/principle-prove-it-works",
+        "skills/principle-redesign-from-first-principles",
+        "skills/principle-sequence-verifiable-units",
+        "skills/principle-subtract-before-you-add",
+        "skills/principle-test-behavior-not-implementation",
+        "skills/principle-type-system-discipline",
+        "skills/tdd",
+        "skills/technical-writing",
+        "skills/typescript-best-practices",
+        "skills/unslop"
+      ],
+      "agents": ["agents/comment-sicko.md"]
     }
   },
   "mattpocock-skills": {

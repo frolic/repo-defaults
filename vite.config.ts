@@ -5,13 +5,13 @@ export default defineConfig({
   fmt: { ...fmt, ignorePatterns: [...fmt.ignorePatterns, 'dist/**', 'vendor/**', 'skills/**'] },
   lint: {
     ...lint,
-    ignorePatterns: [...lint.ignorePatterns, 'vendor/**', 'skills/**'],
+    ignorePatterns: [...lint.ignorePatterns, 'dist/**', 'vendor/**', 'skills/**'],
     overrides: [
       ...lint.overrides,
       {
         // Node runs these files from a checkout, so their imports name the `.ts` file, and the
         // build rewrites them to `.js`.
-        files: ['src/**', 'test/**', 'vite.config.ts'],
+        files: ['src/**', 'scripts/**', 'test/**', 'vite.config.ts'],
         rules: { 'defaults/import-extension': 'off' },
       },
       {
@@ -19,7 +19,7 @@ export default defineConfig({
         rules: { 'import/no-default-export': 'off' },
       },
       {
-        files: ['src/commitMessage.ts', 'src/linkSkills.ts'],
+        files: ['src/commitMessage.ts', 'src/linkSkills.ts', 'scripts/**'],
         rules: { 'no-console': 'off' },
       },
     ],
