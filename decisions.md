@@ -2,6 +2,12 @@
 
 Choices made in this repo, with the options considered and the reason for each. Newest first.
 
+## Semicolons, 100 columns, and annotations on empty collections
+
+- **Options:** semicolons and a 100-column width, or no semicolons and 120 columns; let `prefer-satisfies` allow an annotation on an empty collection (`const chunks: Uint8Array[] = []`), or require a type argument (`new Array<Change>()`) with no exceptions; one tsconfig preset with `nodenext`, or a second one for bundlers.
+- **Trade-offs:** the two repos these rules came from split on each of these. The newer conventions are the ones with semicolons, 100 columns, the annotation exceptions, and `nodenext`, and the other repo is moving to them.
+- **Chosen:** semicolons, 100 columns, the exceptions in `prefer-satisfies`, and the one `nodenext` preset. A repo can still override `fmt.semi` and `fmt.printWidth` after spreading `fmt`.
+
 ## Other repos' skills are vendored with git subtree
 
 - **Options:** copy the files by hand and record the commit; a git submodule per repo; git subtree.
