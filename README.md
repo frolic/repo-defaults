@@ -2,7 +2,7 @@
 
 Writing rules, TypeScript style, config, checks, and agent skills to share across repos.
 
-Include it as a git submodule at `repo-defaults/` or as a git dependency. Neither needs a build step, and nothing is published to npm yet. [SETUP.md](SETUP.md) shows how to wire each part into a repo.
+Include it as a git submodule at `repo-defaults/` or as a git dependency. Neither needs a build step, and nothing is published to npm yet. To set up a repo, add it, run `node repo-defaults/src/init.ts`, and ask your agent to run the `setup-repo-defaults` skill. [SETUP.md](SETUP.md) has the details.
 
 ## What's inside
 
@@ -25,10 +25,11 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, and a package name in a code span, and counts a doc's words for a length cap.
 - `check-commit-message`: runs two of those checks on a commit message.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
+- `init-repo-defaults`: does the setup steps that need no judgment.
 
 **Skills**
 
-- `skills/`: `prose-review`, `pr-review`, `codebase-review`, and `walkthrough`.
+- `skills/`: `setup-repo-defaults`, `prose-review`, `pr-review`, `codebase-review`, and `walkthrough`.
 - `vendor/`: whole skill sets from [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock](https://github.com/mattpocock/skills), and [HumanLayer](https://github.com/humanlayer/skills), copied unchanged with git subtree.
 - `vendor.json`: where each set comes from, its upstream commit, and the skills linked by default.
 

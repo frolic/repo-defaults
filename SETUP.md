@@ -1,5 +1,13 @@
 # Set up a repo
 
+## Quick setup
+
+1. Add repo-defaults as a submodule or a git dependency, as in step 1 below.
+2. Run `node repo-defaults/src/init.ts`, or `pnpm exec init-repo-defaults` for the git dependency. It does steps 2, 4, 5, and 7 where nothing is in the way, and is safe to run again.
+3. Ask your agent to run the `setup-repo-defaults` skill. It merges the lint and format settings into your config, adds the prose test, and lists where your repo's rules disagree with these.
+
+## Each step
+
 Each step is independent, so take only the ones you want. The examples use the submodule paths. For a git dependency, swap in the paths from this table:
 
 | For | Submodule | Git dependency |
@@ -10,7 +18,7 @@ Each step is independent, so take only the ones you want. The examples use the s
 | Commands | `node repo-defaults/src/linkSkills.ts` | `pnpm exec link-skills` |
 | | `node repo-defaults/src/commitMessage.ts` | `pnpm exec check-commit-message` |
 
-## 1. Add repo-defaults
+### 1. Add repo-defaults
 
 As a submodule:
 
@@ -33,7 +41,7 @@ pnpm add -D github:frolic/repo-defaults
 
 The built JavaScript in `dist/` is committed, so the install runs no build script.
 
-## 2. tsconfig
+### 2. tsconfig
 
 ```json
 {
@@ -44,7 +52,7 @@ The built JavaScript in `dist/` is committed, so the install runs no build scrip
 
 Use `tsconfig/library.json` instead for a published library. The presets leave out `lib`, `types`, and output settings, because those depend on where the code runs.
 
-## 3. oxfmt and oxlint
+### 3. oxfmt and oxlint
 
 ```ts
 import { defineConfig } from 'vite-plus';
@@ -62,7 +70,7 @@ export default defineConfig({
 
 The settings already ignore `repo-defaults/**`, so your repo's own rules don't run on these files. If you check it out somewhere else, add that path to both `ignorePatterns` lists.
 
-## 4. Agent instructions
+### 4. Agent instructions
 
 In CLAUDE.md, so Claude Code loads the rules as project instructions:
 
@@ -80,7 +88,7 @@ Near the top of AGENTS.md, for agents that don't follow imports:
 Follow the rules in repo-defaults/writing.md, repo-defaults/typescript.md, repo-defaults/principles.md, and repo-defaults/workflow.md. They apply to every change in this repo.
 ```
 
-## 5. Skills
+### 5. Skills
 
 ```sh
 node repo-defaults/src/linkSkills.ts
@@ -95,7 +103,7 @@ Run it again after an update that adds a skill. It links each skill into `.claud
 
 To keep your repo's picks, put the command in a package.json script.
 
-## 6. Prose checks
+### 6. Prose checks
 
 Run `check` from a test, so it runs with the rest of your tests:
 
@@ -113,7 +121,7 @@ test('the prose follows writing.md', () => {
 
 Pass `tables` for files whose tables quote sentences to avoid in the first column, and `skip` to leave a file out of one rule. To cap a doc's length, test `countWords(file)` against a number you lower as the doc shrinks.
 
-## 7. Commit messages
+### 7. Commit messages
 
 In a commit-msg hook:
 

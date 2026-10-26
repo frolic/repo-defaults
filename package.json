@@ -27,6 +27,7 @@
   ],
   "bin": {
     "check-commit-message": "./dist/commitMessage.js",
+    "init-repo-defaults": "./dist/init.js",
     "link-skills": "./dist/linkSkills.js"
   },
   "exports": {

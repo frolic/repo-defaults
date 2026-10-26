@@ -19,7 +19,7 @@ export default defineConfig({
         rules: { 'import/no-default-export': 'off' },
       },
       {
-        files: ['src/commitMessage.ts', 'src/linkSkills.ts', 'scripts/**'],
+        files: ['src/commitMessage.ts', 'src/init.ts', 'src/linkSkills.ts', 'scripts/**'],
         rules: { 'no-console': 'off' },
       },
     ],
