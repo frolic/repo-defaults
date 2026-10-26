@@ -5,12 +5,14 @@
 // - CLAUDE.md imports the rule files, so Claude Code loads them as project instructions.
 // - AGENTS.md tells other agents to follow the same files.
 // - link-skills links the skills and agents.
-// - The commit-msg hook runs check-commit-message, unless the repo already has a commit-msg hook.
+// - core.hooksPath points at the shared git hooks, unless the repo has hooks of its own, and the
+//   package.json prepare script sets it again in each clone.
+// - .claude/settings.json blocks starting a CI run and skipping the hooks, if the repo has none.
 // - tsconfig.json extends the strict preset, if the repo has no tsconfig.json yet.
 //
 // It prints the steps left over, which the setup-repo-defaults skill does.
 import { execFileSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 const host = process.cwd();
 const prefix = existsSync(join(host, 'repo-defaults/package.json'))
@@ -61,24 +63,54 @@ const git = (...args) => {
         return undefined;
     }
 };
-const hooks = git('config', 'core.hooksPath') || git('rev-parse', '--git-path', 'hooks');
-if (hooks === undefined) {
-    skipped.push('commit-msg hook: not a git repo');
+const hooks = `${prefix}/hooks`;
+const setHooks = `git config core.hooksPath ${hooks}`;
+const hooksPath = git('config', 'core.hooksPath');
+const gitHooks = git('rev-parse', '--git-path', 'hooks');
+if (gitHooks === undefined) {
+    skipped.push('git hooks: not a git repo');
+}
+else if (hooksPath === hooks) {
+    // Already set up.
+}
+else if (hooksPath) {
+    skipped.push(`git hooks: core.hooksPath is ${hooksPath}, so call the hooks in ${hooks}/ from there`);
 }
 else {
-    const hook = join(host, hooks, 'commit-msg');
-    const command = submodule
-        ? 'node repo-defaults/src/commitMessage.ts "$1"'
-        : 'node node_modules/repo-defaults/dist/commitMessage.js "$1"';
-    if (!existsSync(hook)) {
-        mkdirSync(join(host, hooks), { recursive: true });
-        writeFileSync(hook, `#!/bin/sh\n${command}\n`);
-        chmodSync(hook, 0o755);
-        done.push(`${hooks}/commit-msg runs check-commit-message`);
+    const own = ['pre-commit', 'pre-push', 'commit-msg'].filter((name) => existsSync(join(host, gitHooks, name)));
+    if (own.length) {
+        skipped.push(`git hooks: ${gitHooks} has ${own.join(', ')}, so merge them into ${hooks}/`);
     }
-    else if (!readFileSync(hook, 'utf8').includes('commitMessage')) {
-        skipped.push(`commit-msg hook: ${hooks}/commit-msg exists, so add \`${command}\` to it`);
+    else {
+        git('config', 'core.hooksPath', hooks);
+        done.push(`core.hooksPath is ${hooks}`);
     }
+}
+const manifest = read('package.json');
+if (manifest !== undefined) {
+    const json = JSON.parse(manifest);
+    const scripts = json.scripts ?? {};
+    if (scripts['prepare'] === undefined) {
+        json.scripts = { ...scripts, prepare: setHooks };
+        writeFileSync(join(host, 'package.json'), `${JSON.stringify(json, null, 2)}\n`);
+        done.push(`package.json prepare sets core.hooksPath, so each clone gets the hooks`);
+    }
+    else if (!scripts['prepare'].includes(setHooks)) {
+        skipped.push(`package.json: add \`${setHooks}\` to the prepare script`);
+    }
+    const missing = ['check:staged', 'check', 'test:changed', 'test', 'test:full'].filter((name) => scripts[name] === undefined);
+    if (missing.length) {
+        skipped.push(`package.json: add the ${missing.join(', ')} scripts (see workflow.md)`);
+    }
+}
+const settings = join(host, '.claude/settings.json');
+if (!existsSync(settings)) {
+    mkdirSync(join(host, '.claude'), { recursive: true });
+    copyFileSync(join(host, prefix, 'templates/claude/settings.json'), settings);
+    done.push('.claude/settings.json blocks starting CI and skipping hooks');
+}
+else if (!readFileSync(settings, 'utf8').includes('gh workflow run')) {
+    skipped.push(`.claude/settings.json: add the deny rules from ${prefix}/templates/claude/settings.json`);
 }
 const preset = submodule
     ? './repo-defaults/tsconfig/strict.json'
@@ -96,7 +128,7 @@ const left = [
     ...skipped,
     'vite.config.ts or .oxlintrc.json: spread the fmt and lint settings',
     'a test that runs the prose checks',
-    ...(submodule ? ['CI: pass submodules: true to actions/checkout'] : []),
+    `CI: copy ${prefix}/templates/github/workflows/ into .github/workflows/, and run CI only on main and in the merge queue`,
 ];
 console.log([
     '',

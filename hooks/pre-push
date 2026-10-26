@@ -1,0 +1,13 @@
+#!/bin/sh
+# Checks the whole repo and runs the tests that the diff from origin/main affects, so CI on main
+# rarely finds anything new.
+set -e
+. "$(dirname "$0")/_run.sh"
+lock
+if [ -f pnpm-lock.yaml ]; then
+  # Fails when a package.json changed and the lockfile didn't. --ignore-scripts keeps a prepare
+  # script from running while git runs this hook.
+  pnpm install --frozen-lockfile --ignore-scripts --prefer-offline --silent
+fi
+run check
+run test:changed

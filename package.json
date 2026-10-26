@@ -19,6 +19,8 @@
     "dist",
     "src",
     "tsconfig",
+    "hooks",
+    "templates",
     "skills",
     "vendor",
     "writing.md",

@@ -2,6 +2,12 @@
 
 Choices made in this repo, with the options considered and the reason for each. Newest first.
 
+## CI runs only on `main` and in the merge queue
+
+- **Options:** run every check on each pull request; run checks in git hooks and CI only on `main` and the merge queue; no CI at all.
+- **Trade-offs:** CI minutes cost money, and an agent that pushes often can start dozens of runs a day on its branches. The pre-commit and pre-push hooks catch most failures before a push, on the machine that made the change, but they test only what the diff affects. A merge queue runs the default suite before a change reaches `main`, so `main` stays green without a run per push. The full suite, with slow and end-to-end tests, takes too long for every merge.
+- **Chosen:** hooks run `check:staged` on commit and `check` and `test:changed` on push. CI runs `check` and `test` on `main`, in the merge queue, and by hand, and `test:full` runs by hand or before a release. The hooks call package scripts instead of commands, so each repo picks its own tools. `templates/claude/settings.json` denies starting or re-running a CI job and passing `--no-verify`.
+
 ## Semicolons, 100 columns, and annotations on empty collections
 
 - **Options:** semicolons and a 100-column width, or no semicolons and 120 columns; let `prefer-satisfies` allow an annotation on an empty collection (`const chunks: Uint8Array[] = []`), or require a type argument (`new Array<Change>()`) with no exceptions; one tsconfig preset with `nodenext`, or a second one for bundlers.

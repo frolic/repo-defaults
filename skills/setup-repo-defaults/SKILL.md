@@ -19,15 +19,22 @@ git config push.recurseSubmodules on-demand
 
 ## Step 2, Run init
 
-Run `node repo-defaults/src/init.ts` from the repo root, or `pnpm exec init-repo-defaults` for the git dependency. It updates CLAUDE.md and AGENTS.md, links the skills, writes a commit-msg hook if the repo has none, and creates a tsconfig.json if the repo has none. It prints what it did and what is left. Do each item it lists as left, as the steps below describe.
+Run `node repo-defaults/src/init.ts` from the repo root, or `pnpm exec init-repo-defaults` for the git dependency. It updates CLAUDE.md and AGENTS.md, links the skills, points `core.hooksPath` at the shared git hooks and adds a `prepare` script that sets it in each clone, writes `.claude/settings.json`, and creates a tsconfig.json if the repo has none. It prints what it did and what is left. Do each item it lists as left, as the steps below describe.
 
 ## Step 3, Merge the config
 
 - **Format and lint.** If the repo has `vite.config.ts`, import `fmt` and `lint` from repo-defaults (`./repo-defaults/src/oxc.ts` or `repo-defaults/oxc`) and spread them under the repo's own settings, as `SETUP.md` shows. If the repo uses `.oxlintrc.json` and `.oxfmtrc.json` instead, copy the values from `src/oxc.ts` into them, and add the plugin path from `lint.jsPlugins`. Keep the repo's own rules and overrides after the shared ones, so they win.
 - **tsconfig.** Make the repo's base tsconfig extend the strict preset, and keep the repo's own `target`, `lib`, `module`, and `moduleResolution`. Remove each option the preset already sets to the same value.
-- **Hooks.** If the repo already has a commit-msg hook, add the command that init printed to it.
+- **Hooks.** If the repo already has git hooks, init leaves them alone. Merge them into the shared ones: either call the repo's checks from package scripts and switch to `core.hooksPath`, or call `repo-defaults/hooks/<name>` from the repo's own hook.
+- **Scripts.** The hooks and CI call these package scripts, and skip one the repo doesn't have. Add each one init lists as missing, using the repo's own tools:
+  - `check:staged`: format and lint the staged files, such as `vp staged` or `lint-staged`.
+  - `check`: format check, lint, and type-check without fixing.
+  - `test:changed`: the tests the diff from `origin/main` affects, such as `vitest run --changed origin/main`.
+  - `test`: the default suite that CI runs on `main`.
+  - `test:full`: everything, including the slow tests that `test` leaves out.
+- **Agent settings.** If the repo already had `.claude/settings.json`, add the `deny` rules from `templates/claude/settings.json` to it.
 - **Prose test.** Add a test that runs `check` from `src/prose.ts` over the repo's Markdown and source, as `SETUP.md` shows. Skip `repo-defaults/`, `vendor/`, and generated files.
-- **CI.** For the submodule, add `submodules: true` to each `actions/checkout` step. Don't start a CI run to try it.
+- **CI.** Copy `templates/github/workflows/` into `.github/workflows/`. If the repo already has workflows, change their triggers to `push` on `main`, `merge_group`, and `workflow_dispatch`, and drop `pull_request`. For the submodule, keep `submodules: true` on each `actions/checkout` step. Don't start a CI run to try it.
 
 ## Step 4, Find the conflicts
 

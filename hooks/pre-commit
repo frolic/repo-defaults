@@ -1,0 +1,5 @@
+#!/bin/sh
+# Formats and lints the staged files, fixing what it can.
+set -e
+. "$(dirname "$0")/_run.sh"
+run check:staged

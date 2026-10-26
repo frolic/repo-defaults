@@ -3,7 +3,7 @@
 ## Quick setup
 
 1. Add repo-defaults as a submodule or a git dependency, as in step 1 below.
-2. Run `node repo-defaults/src/init.ts`, or `pnpm exec init-repo-defaults` for the git dependency. It does steps 2, 4, 5, and 7 where nothing is in the way, and is safe to run again.
+2. Run `node repo-defaults/src/init.ts`, or `pnpm exec init-repo-defaults` for the git dependency. It does steps 2, 4, 5, 7, and 9 where nothing is in the way, and is safe to run again.
 3. Ask your agent to run the `setup-repo-defaults` skill. It merges the lint and format settings into your config, adds the prose test, and lists where your repo's rules disagree with these.
 
 ## Each step
@@ -121,10 +121,41 @@ test('the prose follows writing.md', () => {
 
 Pass `tables` for files whose tables quote sentences to avoid in the first column, and `skip` to leave a file out of one rule. To cap a doc's length, test `countWords(file)` against a number you lower as the doc shrinks.
 
-### 7. Commit messages
-
-In a commit-msg hook:
+### 7. Git hooks
 
 ```sh
-node repo-defaults/src/commitMessage.ts "$1"
+git config core.hooksPath repo-defaults/hooks
 ```
+
+Add the same command as the package.json `prepare` script, so each clone sets it on `pnpm install`. The hooks:
+
+- **pre-commit** runs the `check:staged` script.
+- **pre-push** checks that the lockfile matches each package.json, then runs `check` and `test:changed`. It holds a lock, so two worktrees don't push at once.
+- **commit-msg** runs the commit message checks.
+
+A hook skips a script the repo doesn't have. If the repo has hooks of its own, call `repo-defaults/hooks/<name>` from them instead of setting `core.hooksPath`.
+
+### 8. Package scripts
+
+[workflow.md](workflow.md#checks-and-ci) lists where each check runs. Define these scripts with your repo's tools:
+
+| Script | Runs | Example |
+| --- | --- | --- |
+| `check:staged` | Format and lint the staged files | `vp staged` |
+| `check` | Format check, lint, and type-check | `vp check && tsc -b` |
+| `test:changed` | The tests the diff from `origin/main` affects | `vitest run --changed origin/main` |
+| `test` | The suite CI runs on `main` | `vitest run` |
+| `test:full` | Everything, before a release | `vitest run && pnpm test:e2e` |
+
+### 9. Agent settings
+
+Copy `repo-defaults/templates/claude/settings.json` to `.claude/settings.json`, or add its `deny` rules to yours. They stop Claude Code from starting or re-running a CI job and from passing `--no-verify`.
+
+### 10. CI
+
+```sh
+mkdir -p .github/workflows
+cp repo-defaults/templates/github/workflows/*.yml .github/workflows/
+```
+
+`checks.yml` runs `check` and `test` on each push to `main`, in the merge queue, and when started by hand. `full.yml` runs `test:full` when started by hand or called from a release workflow. Neither runs on a pull request, because the hooks already ran the checks before the push.

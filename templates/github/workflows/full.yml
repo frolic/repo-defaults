@@ -1,0 +1,28 @@
+# Copied from repo-defaults (templates/github/workflows/full.yml). Runs the full suite, including
+# the slow tests that Checks leaves out, before a release. Start it by hand, or call it from a
+# release workflow with `uses: ./.github/workflows/full.yml`.
+name: Full suite
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - run: pnpm run test:full

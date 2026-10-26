@@ -1,0 +1,5 @@
+#!/bin/sh
+# Rejects a commit message that describes a made-up actor or has a list without a serial comma.
+set -e
+. "$(dirname "$0")/_run.sh"
+node "$(dirname "$0")/../dist/commitMessage.js" "$1"

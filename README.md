@@ -11,7 +11,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - [writing.md](writing.md): docs, comments, commit messages, and PR text, with a table of sentences to avoid.
 - [typescript.md](typescript.md): TypeScript style, API shape, comments, and file names.
 - [principles.md](principles.md): how to design a change.
-- [workflow.md](workflow.md): pull requests, commits, and agent work.
+- [workflow.md](workflow.md): pull requests, which check runs where, and agent work.
 
 **Config**
 
@@ -26,6 +26,12 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `check-commit-message`: runs two of those checks on a commit message.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 - `init-repo-defaults`: does the setup steps that need no judgment.
+- `hooks/`: pre-commit, pre-push, and commit-msg hooks that run a repo's `check:staged`, `check`, and `test:changed` scripts.
+
+**Templates**
+
+- `templates/github/workflows/`: a Checks workflow for `main` and the merge queue, and a Full suite workflow for releases.
+- `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks.
 
 **Skills**
 
