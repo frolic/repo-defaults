@@ -17,5 +17,14 @@
       "skills": [],
       "agents": []
     }
+  },
+  "humanlayer-skills": {
+    "repo": "https://github.com/humanlayer/skills",
+    "ref": "main",
+    "commit": "653b6411c1f70c275a18e37673b042ff99f67ceb",
+    "link": {
+      "skills": [],
+      "agents": []
+    }
   }
 }
