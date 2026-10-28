@@ -6,8 +6,14 @@ export declare function findMissingSerialComma(line: string): string | undefined
 export declare function findRuledOutWord(line: string): string | undefined;
 /** Returns the first package name in a code span in `line`, or `undefined` if it has none. */
 export declare function findCodePackageName(line: string): string | undefined;
+/**
+ * Returns the first goal id in `line`, such as `G1`, or `undefined` if it has none. A reader can't
+ * look an id up, so prose names the goal in words or links its section. Code spans and text in
+ * double quotes are skipped, so a rule can quote the pattern.
+ */
+export declare function findGoalId(line: string): string | undefined;
 /** A check that `check` runs on each line of prose. */
-export type Rule = 'made-up-actor' | 'serial-comma' | 'ruled-out-word' | 'code-package-name';
+export type Rule = 'made-up-actor' | 'serial-comma' | 'ruled-out-word' | 'code-package-name' | 'goal-id';
 /** A line of prose that breaks a rule, with its path relative to `check`'s `root`. */
 export type Finding = {
     file: string;

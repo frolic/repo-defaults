@@ -22,7 +22,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 
 **Checks and commands**
 
-- `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, and a package name in a code span, and counts a doc's words for a length cap.
+- `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, a package name in a code span, and a goal named by an id, and counts a doc's words for its word budget.
 - `check-commit-message`: runs two of those checks on a commit message.
 - `src/unenforcedCorrections.ts`: finds a correction in the log that was given twice and has no check yet.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.

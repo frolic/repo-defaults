@@ -101,8 +101,22 @@ export function findCodePackageName(line: string): string | undefined {
   return codePackage.exec(line.replaceAll(/"[^"]*"/g, ''))?.[0];
 }
 
+/**
+ * Returns the first goal id in `line`, such as `G1`, or `undefined` if it has none. A reader can't
+ * look an id up, so prose names the goal in words or links its section. Code spans and text in
+ * double quotes are skipped, so a rule can quote the pattern.
+ */
+export function findGoalId(line: string): string | undefined {
+  return /\bG\d+\b/.exec(line.replaceAll(/\x60[^\x60]*\x60/g, '').replaceAll(/"[^"]*"/g, ''))?.[0];
+}
+
 /** A check that `check` runs on each line of prose. */
-export type Rule = 'made-up-actor' | 'serial-comma' | 'ruled-out-word' | 'code-package-name';
+export type Rule =
+  | 'made-up-actor'
+  | 'serial-comma'
+  | 'ruled-out-word'
+  | 'code-package-name'
+  | 'goal-id';
 
 /** A line of prose that breaks a rule, with its path relative to `check`'s `root`. */
 export type Finding = { file: string; line: number; rule: Rule; text: string };
@@ -112,6 +126,7 @@ const finders = {
   'serial-comma': findMissingSerialComma,
   'ruled-out-word': findRuledOutWord,
   'code-package-name': findCodePackageName,
+  'goal-id': findGoalId,
 } satisfies Record<Rule, (line: string) => string | undefined>;
 
 /**
