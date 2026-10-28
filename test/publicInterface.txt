@@ -48,6 +48,10 @@ repo-defaults/prose
       };
   }
 
+repo-defaults/minimumReleaseAge
+
+  const minimumReleaseAge: (root: string) => number | undefined
+
 repo-defaults/publicInterface
 
   const publicInterface: (entries: readonly publicInterface.Entry[], options?: publicInterface.Options) => string
@@ -71,3 +75,7 @@ repo-defaults/unenforcedCorrections
           seen: number;
       }[];
   }
+
+repo-defaults/versionRanges
+
+  const versionRanges: (root: string) => string[]

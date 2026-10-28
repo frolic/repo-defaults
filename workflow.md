@@ -54,6 +54,11 @@ CI minutes cost money, so each check runs as early and as narrowly as it can, an
 - `test` stays fast enough to run on every push to `main`. A slow test, such as a fuzz run with many cases, a benchmark, or a scale test, goes in `test:full`, or in its own script that you run when you work on that area.
 - The git hooks in `repo-defaults/hooks/` run these scripts, and skip a script the repo doesn't have. `templates/github/workflows/` holds a Checks workflow for `main` and the merge queue, and a Full suite workflow to run by hand or from a release workflow.
 
+## Dependencies
+
+- Every dependency names an exact version, such as `4.0.2`, and so does every entry of a pnpm catalog, so an install never picks up a release that nobody chose. Only a peer dependency is a range, because it says what the package works with. A test that runs `versionRanges` from `src/versionRanges.ts` checks this.
+- pnpm refuses a version published less than 14 days ago (`minimumReleaseAge: 20160` in pnpm-workspace.yaml, as in `templates/pnpm/pnpm-workspace.yaml`), so a hijacked release is found and pulled first. `minimumReleaseAge` from `src/minimumReleaseAge.ts` reads the setting for a test.
+
 ## Corrections and retro
 
 A correction the owner has to give twice is a gap in the process, not in the agent, and a check closes it.

@@ -26,6 +26,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `check-commit-message`: runs two of those checks on a commit message.
 - `src/unenforcedCorrections.ts`: finds a correction in the log that was given twice and has no check yet.
 - `src/publicInterface.ts`: prints the exports of a package's entries through the TypeScript compiler, for a test that fails when the public interface changes.
+- `src/versionRanges.ts` and `src/minimumReleaseAge.ts`: find a dependency that names a range instead of an exact version, and read the release age that pnpm enforces.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 - `init-repo-defaults`: does the setup steps that need no judgment.
 - `hooks/`: pre-commit, pre-push, and commit-msg hooks that run a repo's `check:staged`, `check`, and `test:changed` scripts.
@@ -35,6 +36,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `templates/github/workflows/`: a Checks workflow for `main` and the merge queue, and a Full suite workflow for releases.
 - `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks, and refuses a shell command that edits files in place (`src/refuseInPlaceEdits.ts`).
 - `templates/claude/corrections.md`: the log of the owner's corrections that the `retro` skill turns into checks.
+- `templates/pnpm/pnpm-workspace.yaml`: refuses a package version younger than 14 days.
 
 **Skills**
 

@@ -174,7 +174,9 @@ cp repo-defaults/templates/github/workflows/*.yml .github/workflows/
 
 Each of these is a function you call from a test, for the repos it fits.
 
-**Public interface.** If other packages, apps, or repos import yours, print the exports of their entries and compare them with a committed file. The test fails when a name is added, removed, or changes its type, and the diff of the file shows the change to the owner. Rewrite the file with `-u` only once the owner agrees.
+#### Public interface
+
+If other packages, apps, or repos import yours, print the exports of their entries and compare them with a committed file. The test fails when a name is added, removed, or changes its type, and the diff of the file shows the change to the owner. Rewrite the file with `-u` only once the owner agrees.
 
 ```ts
 import { publicInterface } from '../repo-defaults/src/publicInterface.ts';
@@ -183,5 +185,22 @@ test('the public interface changes only with the owner agreement', async () => {
   await expect(
     publicInterface([{ specifier: '@acme/sdk', path: join(root, 'packages/sdk/src/index.ts') }]),
   ).toMatchFileSnapshot('./publicInterface.txt');
+});
+```
+
+#### Exact versions and release age
+
+Copy `repo-defaults/templates/pnpm/pnpm-workspace.yaml`, or add its `minimumReleaseAge` line to yours, so pnpm refuses a version younger than 14 days. If the lockfile already holds younger versions, `pnpm install --frozen-lockfile` fails until they turn 14 days old, so list them in `minimumReleaseAgeExclude` until then. Then pin each range to the version in the lockfile.
+
+```ts
+import { minimumReleaseAge } from '../repo-defaults/src/minimumReleaseAge.ts';
+import { versionRanges } from '../repo-defaults/src/versionRanges.ts';
+
+test('each dependency names an exact version', () => {
+  expect(versionRanges(root)).toEqual([]);
+});
+
+test('pnpm refuses a release younger than 14 days', () => {
+  expect(minimumReleaseAge(root)).toBeGreaterThanOrEqual(14 * 24 * 60);
 });
 ```
