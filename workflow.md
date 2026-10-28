@@ -21,6 +21,8 @@ The owner reads a short design, not the code, so the decisions that need the own
 
 ## What needs the owner
 
+Before code adds, removes, or changes a public interface, a key layout, or a route, ask the owner to choose from two or three options, with a recommendation. An interface is the trust boundary between parts and the thing the tests check against, so a change to it changes what every caller relies on. The table lists this and the other questions only the owner answers.
+
 | Kind | What it is | What the question shows |
 | --- | --- | --- |
 | Interface change | A public name, signature, type, key layout, route, or promise is added, changed, or removed, and so is a performance budget that goes up. Public means what other packages, apps, or repos import or call. | The interface before and after, as code. Why. What it costs callers now and what it buys later. Two or three options, and why this one. |
