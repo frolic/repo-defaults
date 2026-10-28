@@ -1,11 +1,11 @@
 ---
 name: pr-review
-description: Have a Fable agent review a change for design and correctness, then judge and fix what it finds. Use before a change is ready for review or before it merges, and again after a large change to it.
+description: Have fresh Fable agents review a change against its design and its brief. Judge and fix what they find, then get an independent verdict at the head commit. Use before a change is ready for review or before it merges, and again after each push.
 ---
 
 # Review a change
 
-The agent that wrote a change does not review it alone. A second agent on Claude Fable reads the change with a fresh context. The reviewer is deliberately strict, so some findings are wrong or too small, and the author judges each finding before acting on it.
+The agent that wrote a change never judges it alone. Fresh agents on Claude Fable read the change with a fresh context. The reviewers are deliberately strict, so some findings are wrong or too small, and the author judges each finding before acting on it. Then another fresh agent runs the checks again and writes the verdict. A branch is ready only when that verdict is `PASS` or `PASS with notes` at its head commit.
 
 ## Steps
 
@@ -16,10 +16,13 @@ The agent that wrote a change does not review it alone. A second agent on Claude
    - the output of `git diff --stat` for the change, so that it reads the diff one package at a time, not as one large file
    - the text of the sections "What to look for", "What not to report", and "How to report" below
    - this instruction: "Read the code and report findings. Do not edit files, commit, or post to GitHub."
-3. When the change adds or edits prose (docs, READMEs, JSDoc, comments, the commit message, or the pull request text), start a second agent in the same call, as "Prose pass" says.
+3. In the same call, start the other passes that fit the change:
+   - the brief pass, when a brief, a proposal, or an issue states what the change must do, as "Brief pass" says
+   - the prose pass, when the change adds or edits prose (docs, READMEs, JSDoc, comments, the commit message, or the pull request text), as "Prose pass" says
 4. Judge each finding as "Judge the findings" says. Then fix the findings you keep.
-5. If the fixes changed the design, run the review again. Stop when no finding is left to fix, or after three rounds.
-6. Put the findings you fixed in the commit message. In the pull request text, add a short "Review" section only for the findings that a person may want to overrule: the ones you dismissed or left open, one plain line each. Leave the section out when there are none.
+5. If the fixes changed the design, run the review again, on the diff of the fixes. Stop when no finding is left to fix, or after three rounds.
+6. Push, then get the verdict, as "The verdict" says. A push after the verdict needs a new one.
+7. Put the findings you fixed in the commit message. In the pull request text, add a short "Review" section only for the findings that a person may want to overrule: the ones you dismissed or left open, one plain line each. Leave the section out when there are none.
 
 ## What to look for
 
@@ -61,10 +64,14 @@ Be ambitious. Do not stop at "this could be a bit cleaner". Look for a restructu
 ## How to report
 
 - Start with the number of findings of each kind, or with "No findings." A review with no findings is a good result. Do not add small items to fill the review.
-- Give each finding a `file:line`. Start it with **Blocking** (a bug, a security problem, or a doc that is now wrong) or **Design** (items 1 to 7). Report at most three small items, marked **Small**.
+- Give each finding a `file:line`. Start it with **Blocking** (a bug, a security problem, a doc that is now wrong, or a brief finding) or **Design** (items 1 to 7). Report at most three small items, marked **Small**.
 - For each finding, give the evidence. For a bug, give the caller or input that causes it and the steps from there to the failure. For a Design finding, say what is wrong, what a simpler design is, and what it removes.
-- If you think a finding is real but you cannot show the path, say so. Do not state a guess as a fact.
+- Label the evidence of each finding as **measured** (you ran something and it showed this; give the command), **inferred** (you followed the path in the code; give the steps), or **guess**. A Blocking finding is measured or inferred, never a guess.
 - Write by `writing.md`.
+
+## Brief pass
+
+The design reviewer judges the code. A third agent checks only that the change does what was asked. Start it with the Agent tool and `model: "fable"`, and give it the base and head of the change; the path or link of the brief, the proposal, or the issue; the text of "How to report"; and this instruction: "Read the brief and the diff, and nothing else. Do not judge style or design. Report three kinds of finding: Missing, when the brief asks for something the change doesn't do; Unasked, when the change does something the brief didn't ask for; and Wrong, when the change does what the brief asked, but not the way it says. Quote the line of the brief that each finding rests on, and drop a finding without one. Do not edit files, commit, or post to GitHub."
 
 ## Prose pass
 
@@ -101,4 +108,18 @@ Some findings show that the design is wrong, not one line. Do not add another fi
 2. Ask: "If we wrote this part today with this requirement from the start, what would we build?"
 3. If the answer is not clear, sketch two or three different designs and compare them. Prefer the one that removes the most code and the most rules a reader must know.
 
-The review rules adapt these pstack skills (github.com/cursor/plugins): `thermo-nuclear-code-quality-review`; the rubric and lead judgment of `interrogate`; and the `principle-*` skills, mostly `attack-the-premise`, `fix-root-causes`, `redesign-from-first-principles`, `exhaust-the-design-space`, and `subtract-before-you-add`.
+## The verdict
+
+A report from the author is not proof that the change works. A fresh agent that wrote none of the change and none of the fixes gives the verdict. Start it with the Agent tool and `model: "fable"`, and give it the repository path, the full 40-character head SHA, the base, the pull request text, the brief if one exists, and the text of this section.
+
+At that SHA, it runs the repository's checks and tests. When the change touches a flow that a person goes through, it also runs the end-to-end tests of that flow, or the repository's skill that checks it in a real browser. Green CI is an input, not a verdict. A test counts only when its name shows as passed in the output, because a filter that matches nothing also passes.
+
+It then lists each claim that the pull request text and the brief make, and writes one row for each, with three cells: the claim; the command or file that shows it; and the result. It ends with one verdict:
+
+- `PASS`: every claim is shown.
+- `PASS with notes`: every claim is shown, with notes a person may want to read.
+- `FAIL`: a claim is not shown, or a check fails. An inconclusive run is a `FAIL`.
+
+It posts the verdict as a pull request comment that starts with the head SHA. A `FAIL` goes back to step 4 and counts as a fix round.
+
+The review rules adapt these pstack skills (github.com/cursor/plugins): `thermo-nuclear-code-quality-review`; the rubric and lead judgment of `interrogate`; and the `principle-*` skills, mostly `attack-the-premise`, `fix-root-causes`, `redesign-from-first-principles`, `exhaust-the-design-space`, and `subtract-before-you-add`. The brief pass adapts the Spec axis of Matt Pocock's `code-review`.
