@@ -15,13 +15,13 @@ How to work on a change in every repo that includes repo-defaults, for people an
 
 CI minutes cost money, so each check runs as early and as narrowly as it can, and CI runs only once a change is on its way into `main`.
 
-| When | What runs | Package script |
-| --- | --- | --- |
-| While you change code | The tests that cover the code you changed, including its end-to-end tests, picked by file or test name | your test runner with a filter, such as `pnpm vitest run src/feed` |
-| Each commit (pre-commit hook) | Format and lint the staged files, fixing what it can | `check:staged` |
-| Each push (pre-push hook) | Check that the lockfile matches each package.json, then format check, lint, and type-check the whole repo, then run the tests the diff from `origin/main` affects | `check`, then `test:changed` |
-| Push to `main`, and the merge queue | Every check and the default test suite | `check`, then `test` |
-| Before a release | The full suite, including slow, browser, fuzz, and end-to-end tests that `test` leaves out | `test:full` |
+| When                                | What runs                                                                                                                                                         | Package script                                                     |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| While you change code               | The tests that cover the code you changed, including its end-to-end tests, picked by file or test name                                                            | your test runner with a filter, such as `pnpm vitest run src/feed` |
+| Each commit (pre-commit hook)       | Format and lint the staged files, fixing what it can                                                                                                              | `check:staged`                                                     |
+| Each push (pre-push hook)           | Check that the lockfile matches each package.json, then format check, lint, and type-check the whole repo, then run the tests the diff from `origin/main` affects | `check`, then `test:changed`                                       |
+| Push to `main`, and the merge queue | Every check and the default test suite                                                                                                                            | `check`, then `test`                                               |
+| Before a release                    | The full suite, including slow, browser, fuzz, and end-to-end tests that `test` leaves out                                                                        | `test:full`                                                        |
 
 - Run end-to-end tests locally when a change can break them, but run only the ones that cover what changed, not the whole end-to-end suite.
 - Never start a CI run on a branch or a pull request to check it, and never re-run a CI job to see if it passes. Run the check locally instead.

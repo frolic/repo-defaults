@@ -4,13 +4,13 @@ This repo holds the rules and tooling that other repos include as a git submodul
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `pnpm check` | Format with oxfmt, lint with oxlint, and type-check, fixing what it can (`vp check --fix`). |
-| `pnpm check:types` | `tsc -p tsconfig.json` over `src/` and `test/`. |
-| `pnpm test` | The rule tests, the prose checks over this repo, and the tests of `link-skills`, `pnpm vendor`, and `dist/`. |
-| `pnpm vendor add <name> <repo>`, `pnpm vendor update [<name>]` | Vendors a repo into `vendor/<name>` with git subtree, or pulls the newest upstream commit (`scripts/vendor.ts`). |
-| `pnpm build` | Builds `dist/` with `tsconfig.build.json`. Commit `dist/` with the change to `src/`, because a git dependency uses it. `test/dist.test.ts` fails when `dist/` doesn't match a fresh build. |
+| Command                                                        | What it does                                                                                                                                                                               |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm check`                                                   | Format with oxfmt, lint with oxlint, and type-check, fixing what it can (`vp check --fix`).                                                                                                |
+| `pnpm check:types`                                             | `tsc -p tsconfig.json` over `src/` and `test/`.                                                                                                                                            |
+| `pnpm test`                                                    | The rule tests, the prose checks over this repo, and the tests of `link-skills`, `pnpm vendor`, and `dist/`.                                                                               |
+| `pnpm vendor add <name> <repo>`, `pnpm vendor update [<name>]` | Vendors a repo into `vendor/<name>` with git subtree, or pulls the newest upstream commit (`scripts/vendor.ts`).                                                                           |
+| `pnpm build`                                                   | Builds `dist/` with `tsconfig.build.json`. Commit `dist/` with the change to `src/`, because a git dependency uses it. `test/dist.test.ts` fails when `dist/` doesn't match a fresh build. |
 
 ## Rules for this repo
 
