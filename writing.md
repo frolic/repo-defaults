@@ -16,6 +16,8 @@ Follow these rules in every repo that includes repo-defaults. Read the `technica
 - Don't write rules as slogans or aphorisms ("a write lands only on the version it saw"). Name the mechanism.
 - No "X. So Y. So Z." chains. Vary sentence length, and keep a cause and its effect in one sentence when they belong together.
 - No AI vocabulary (delve, crucial, leverage), no "not just X but Y", no forced groups of three, no em dashes, no filler or hedging, and no clipped fragments with arrows.
+- Readers stop at the first line that sounds machine-written, so a longer text in a human voice beats a shorter one that reads like AI. When ideas connect, write a paragraph instead of a bullet for each line. Don't start each item of a list with a bold label and a colon. Avoid stiff words such as "ensures", "robust", and "seamless".
+- Use "we" for the team that owns the code and "you" for the reader. Read the text aloud before you commit it, and if it sounds like a press release or a form, rewrite it.
 - A commit message says why the change is made and what else was considered.
 - Keep docs, comments, commit messages, and PR bodies blameless and neutral. Describe what the code does and why, not who asked for it, approved it, or wrote it, and don't name people or private projects and apps. Write "an audit of three apps that use the library", not the apps' names.
 
@@ -71,6 +73,8 @@ Each row of this table is a pattern to avoid, not only the one sentence. When yo
 - `docs/` and the READMEs describe the present. Reasons and history go in commit messages.
 - A change that makes a doc or a README wrong fixes it in the same commit.
 - `docs/proposals/` holds a plan that isn't built yet. As each step is built, its part moves into the other docs and leaves the plan.
+- Each top-level doc, such as the goals or the architecture, has a word budget, so a person can read them all in one sitting. A test checks `countWords` from `src/prose.ts` against each budget. Lower a budget when its doc shrinks, and raise it only when a reviewer agrees the new text is worth it.
+- Name a goal in words, or link its section, never by an id such as `G1`, because a reader can't look an id up. The prose checks reject an id of that form (`goal-id`).
 
 ## Pull requests
 

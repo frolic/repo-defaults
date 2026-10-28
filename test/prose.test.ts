@@ -6,6 +6,7 @@ import {
   check,
   countWords,
   findCodePackageName,
+  findGoalId,
   findMadeUpActor,
   findMissingSerialComma,
   findRuledOutWord,
@@ -83,6 +84,13 @@ test('findCodePackageName finds package names and skips subpaths', () => {
   expect(findCodePackageName('The [`Spf.check`](../spf/README.md) result.')).toBeUndefined();
   expect(findCodePackageName('Never write "`@acme/errors`".')).toBeUndefined();
   expect(findCodePackageName('Errors extend the classes in @acme/errors.')).toBeUndefined();
+});
+
+test('findGoalId finds a goal named by an id and skips other words', () => {
+  expect(findGoalId('This keeps G1 and G12.')).toBe('G1');
+  expect(findGoalId('Reads stay offline (G12).')).toBe('G12');
+  expect(findGoalId('Not GPU, G-sync, or the code span `G3`.')).toBeUndefined();
+  expect(findGoalId('Never write "G1".')).toBeUndefined();
 });
 
 test('findRuledOutWord skips code spans and quotations', () => {

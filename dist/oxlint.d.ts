@@ -4,7 +4,7 @@ type Plugin = {
     meta: {
         name: string;
     };
-    rules: Record<'import-extension' | 'no-enum' | 'optional-undefined' | 'prefer-satisfies' | 'type-parameter-name', Rule>;
+    rules: Record<'boolean-name' | 'import-extension' | 'no-enum' | 'one-export-per-file' | 'optional-undefined' | 'prefer-satisfies' | 'type-parameter-name', Rule>;
 };
 declare const _default: Plugin;
 export default _default;

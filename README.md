@@ -11,19 +11,25 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - [writing.md](writing.md): docs, comments, commit messages, and PR text, with a table of sentences to avoid.
 - [typescript.md](typescript.md): TypeScript style, API shape, comments, and file names.
 - [principles.md](principles.md): how to design a change.
-- [workflow.md](workflow.md): pull requests, which check runs where, and agent work.
+- [workflow.md](workflow.md): pull requests and their review, what needs the owner, which check runs where, the corrections log, and agent work.
 
 **Config**
 
 - `tsconfig/strict.json`: strict compiler options.
 - `tsconfig/library.json`: `strict.json` plus declaration output, for a published library.
 - `src/oxc.ts`: `fmt` and `lint` settings for `vite.config.ts`.
-- `src/oxlint.ts`: five lint rules under `defaults/`: `import-extension`, `no-enum`, `optional-undefined`, `prefer-satisfies`, and `type-parameter-name`.
+- `src/oxlint.ts`: seven lint rules under `defaults/`: `boolean-name`, `import-extension`, `no-enum`, `one-export-per-file`, `optional-undefined`, `prefer-satisfies`, and `type-parameter-name`.
 
 **Checks and commands**
 
-- `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, and a package name in a code span, and counts a doc's words for a length cap.
+- `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, a package name in a code span, and a goal named by an id, and counts a doc's words for its word budget.
 - `check-commit-message`: runs two of those checks on a commit message.
+- `src/unenforcedCorrections.ts`: finds a correction in the log that was given twice and has no check yet.
+- `src/publicInterface.ts`: prints the exports of a package's entries through the TypeScript compiler, for a test that fails when the public interface changes.
+- `src/versionRanges.ts` and `src/minimumReleaseAge.ts`: find a dependency that names a range instead of an exact version, and read the release age that pnpm enforces.
+- `src/propertySeed.ts`: the fixed seed for property tests, which `PROPERTY_SEED` changes.
+- `src/unusedDependencies.ts` and `src/unusedEntryNames.ts`: find a dependency that a workspace package doesn't use, and an exported name that nothing uses.
+- `src/sharedTypes.ts`: finds a type beside a function that files in three or more folders import, so it moves to its own file.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 - `init-repo-defaults`: does the setup steps that need no judgment.
 - `hooks/`: pre-commit, pre-push, and commit-msg hooks that run a repo's `check:staged`, `check`, and `test:changed` scripts.
@@ -31,11 +37,13 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 **Templates**
 
 - `templates/github/workflows/`: a Checks workflow for `main` and the merge queue, and a Full suite workflow for releases.
-- `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks.
+- `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks, and refuses a shell command that edits files in place (`src/refuseInPlaceEdits.ts`).
+- `templates/claude/corrections.md`: the log of the owner's corrections that the `retro` skill turns into checks.
+- `templates/pnpm/pnpm-workspace.yaml`: refuses a package version younger than 14 days.
 
 **Skills**
 
-- `skills/`: `setup-repo-defaults`, `prose-review`, `pr-review`, `codebase-review`, and `walkthrough`.
+- `skills/`: `setup-repo-defaults`, `prose-review`, `pr-review`, `codebase-review`, `walkthrough`, and `retro`.
 - `vendor/`: whole skill sets from [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock](https://github.com/mattpocock/skills), and [HumanLayer](https://github.com/humanlayer/skills), copied unchanged with git subtree.
 - `vendor.json`: where each set comes from, its upstream commit, and the skills linked by default.
 

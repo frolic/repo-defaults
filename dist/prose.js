@@ -74,11 +74,20 @@ const codePackage = /\x60@[a-z0-9-]+\/[a-z0-9._-]+\x60|\x60[@a-z0-9._/-]+\x60 pa
 export function findCodePackageName(line) {
     return codePackage.exec(line.replaceAll(/"[^"]*"/g, ''))?.[0];
 }
+/**
+ * Returns the first goal id in `line`, such as `G1`, or `undefined` if it has none. A reader can't
+ * look an id up, so prose names the goal in words or links its section. Code spans and text in
+ * double quotes are skipped, so a rule can quote the pattern.
+ */
+export function findGoalId(line) {
+    return /\bG\d+\b/.exec(line.replaceAll(/\x60[^\x60]*\x60/g, '').replaceAll(/"[^"]*"/g, ''))?.[0];
+}
 const finders = {
     'made-up-actor': findMadeUpActor,
     'serial-comma': findMissingSerialComma,
     'ruled-out-word': findRuledOutWord,
     'code-package-name': findCodePackageName,
+    'goal-id': findGoalId,
 };
 /**
  * Returns the Markdown and TypeScript files under `dir`, skipping `node_modules`, `dist`, `.git`,

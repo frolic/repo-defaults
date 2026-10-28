@@ -48,6 +48,46 @@
       "types": "./dist/prose.d.ts",
       "default": "./dist/prose.js"
     },
+    "./minimumReleaseAge": {
+      "src": "./src/minimumReleaseAge.ts",
+      "types": "./dist/minimumReleaseAge.d.ts",
+      "default": "./dist/minimumReleaseAge.js"
+    },
+    "./propertySeed": {
+      "src": "./src/propertySeed.ts",
+      "types": "./dist/propertySeed.d.ts",
+      "default": "./dist/propertySeed.js"
+    },
+    "./publicInterface": {
+      "src": "./src/publicInterface.ts",
+      "types": "./dist/publicInterface.d.ts",
+      "default": "./dist/publicInterface.js"
+    },
+    "./unenforcedCorrections": {
+      "src": "./src/unenforcedCorrections.ts",
+      "types": "./dist/unenforcedCorrections.d.ts",
+      "default": "./dist/unenforcedCorrections.js"
+    },
+    "./sharedTypes": {
+      "src": "./src/sharedTypes.ts",
+      "types": "./dist/sharedTypes.d.ts",
+      "default": "./dist/sharedTypes.js"
+    },
+    "./unusedDependencies": {
+      "src": "./src/unusedDependencies.ts",
+      "types": "./dist/unusedDependencies.d.ts",
+      "default": "./dist/unusedDependencies.js"
+    },
+    "./unusedEntryNames": {
+      "src": "./src/unusedEntryNames.ts",
+      "types": "./dist/unusedEntryNames.d.ts",
+      "default": "./dist/unusedEntryNames.js"
+    },
+    "./versionRanges": {
+      "src": "./src/versionRanges.ts",
+      "types": "./dist/versionRanges.d.ts",
+      "default": "./dist/versionRanges.js"
+    },
     "./tsconfig/strict.json": "./tsconfig/strict.json",
     "./tsconfig/library.json": "./tsconfig/library.json",
     "./package.json": "./package.json"
@@ -76,10 +116,10 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
+    "@types/node": "26.6.5",
     "oxfmt": "0.73.0",
     "oxlint": "1.88.0",
-    "typescript": "^6.0.3",
+    "typescript": "6.0.3",
     "vite-plus": "1.3.0"
   },
   "packageManager": "pnpm@11.28.6"

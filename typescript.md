@@ -31,13 +31,15 @@ A comment that explains your own code is a sign the code needs a better name or 
 
 ## Files and names
 
-- One export per file, and the file has its name. A test sits next to its file (`foo.test.ts` beside `foo.ts`).
+- One function, class, or const per file, and the file has its name. Its own types, such as its options and its result, sit beside it. A file of types exports one type with the file's name. A type that files in three or more folders import moves to a file of its own name. A `constants.ts` in a feature's folder may export many plain constants of that feature, such as the timeouts in `passkey/constants.ts`, but no functions, and no `constants.ts` sits at the top of `src/`. A re-export, such as an entry file that lists a package's names, and a default export pass. `defaults/one-export-per-file` checks this, and in a workspace, a test that runs `sharedTypes` from `src/sharedTypes.ts` finds a shared type that sits beside a function.
+- A test sits next to its file (`foo.test.ts` beside `foo.ts`).
 - No `utils/` folders. Files stay flat in `src/` until a feature's files are used only by that feature, and then a folder named for the feature holds them. A folder never holds one kind of file (`components/`, `hooks/`, `types/`).
 - Use full names: `entity`, `attribute`, `page`, not `e`, `attr`, `pg`. A name says what the caller gets, in plain words and the words of the repo's docs.
-- A timestamp's name ends in `At` (`addedAt`, `expiresAt`). A boolean that describes something starts with `is` or `has` (`isOnline`, `hasPasskey`). A flag that asks for an action is a verb (`compress`, `discard`).
+- A timestamp's name ends in `At` (`addedAt`, `expiresAt`). A boolean that describes something starts with `is` or `has` (`isOnline`, `hasPasskey`). A flag that asks for an action is a verb (`compress`, `discard`). `defaults/boolean-name` checks variables, parameters, and properties typed `boolean`, and its `verbs` option adds the verbs a repo's flags use.
 
 ## API shape
 
+- A package entry exports only names that something uses: another package imports it, the package's README shows it, or the signature of another export refers to it. In a workspace, a test that runs `unusedEntryNames` from `src/unusedEntryNames.ts` checks this.
 - A function that returns a boolean starts with `is`, `has`, or `can`, unless a standard name exists, such as `equal`.
 - Choose parameters with these three rules, in order:
   - When a function is the analogue of a platform function, copy that function's signature.
@@ -58,4 +60,7 @@ A comment that explains your own code is a sign the code needs a better name or 
 - Use end-to-end tests for performance too. Count what a user waits on, such as requests, round trips, and bytes over the wire, and assert the count, so a change that adds a request fails the test.
 - Write a unit test for small, pure logic, such as a parser, an encoder, or a function with many edge cases. A fake or in-memory version of a service can run the same suite as the real one, but it doesn't replace the end-to-end test.
 - Assert what a caller can observe. Read the `principle-test-behavior-not-implementation` skill before writing tests.
+- Name each test after the promise it checks, in the words of the doc that makes the promise: the goals, the architecture, or a README. Each promise in those docs has a test with its name. A test whose name matches no promise either adds the promise to a doc or goes.
+- A property test draws its inputs from one fixed seed, so CI passes or fails the same way on each run. `PROPERTY_SEED` picks another seed for a local search, and a failing test prints the seed it ran with. `propertySeed` from `src/propertySeed.ts` reads the seed, and [SETUP.md](SETUP.md#property-tests) shows the setup file.
+- A test never sleeps for a fixed time. It waits for the condition it needs, such as a message or a row, with a deadline, so it doesn't fail on a slow machine or waste time on a fast one.
 - A test that compares timings belongs with the benchmarks, because timing tests fail when the machine is loaded. Counts of requests and bytes don't depend on the machine, so they belong in the normal tests.

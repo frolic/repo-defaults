@@ -20,4 +20,5 @@ This repo holds the rules and tooling that other repos include as a git submodul
 - `src/` may use `node:*` modules. These files run in Node at development time and never in a host repo's published code.
 - Don't edit the files under `vendor/<name>`. Change them upstream, or keep a changed copy in `skills/`, and update the source with `pnpm vendor update`.
 - When a rule in writing.md or typescript.md gets a check, name the check in the rule.
+- `test/publicInterface.txt` prints the names and types that other repos import from `src/`. A change to it is an interface change, so rewrite it with `pnpm test -u` only once the owner agrees.
 - `hooks/` are POSIX shell scripts that call package scripts by their names in workflow.md, so they work in any repo. Put a repo's own commands in its package scripts, not in the hooks.

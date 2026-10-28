@@ -41,8 +41,10 @@ export declare const lint: {
     rules: {
         curly: ["error", "all"];
         'no-console': "error";
+        'defaults/boolean-name': "error";
         'defaults/import-extension': "error";
         'defaults/no-enum': "error";
+        'defaults/one-export-per-file': "error";
         'defaults/optional-undefined': "error";
         'defaults/prefer-satisfies': "error";
         'defaults/type-parameter-name': "error";

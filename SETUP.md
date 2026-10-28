@@ -149,7 +149,17 @@ A hook skips a script the repo doesn't have. If the repo has hooks of its own, c
 
 ### 9. Agent settings
 
-Copy `repo-defaults/templates/claude/settings.json` to `.claude/settings.json`, or add its `deny` rules to yours. They stop Claude Code from starting or re-running a CI job and from passing `--no-verify`.
+Copy `repo-defaults/templates/claude/settings.json` to `.claude/settings.json`, or add its `deny` rules and its `hooks` to yours. The rules stop Claude Code from starting or re-running a CI job and from passing `--no-verify`. The hook runs `src/refuseInPlaceEdits.ts` before each shell command, and refuses `sed -i`, `perl -i`, and a script that writes files, so each change goes through the Edit or Write tool and shows as a diff. For the git dependency, the hook runs `node_modules/repo-defaults/dist/refuseInPlaceEdits.js` instead, and init writes that path.
+
+Copy `repo-defaults/templates/claude/corrections.md` to `.claude/corrections.md`, and schedule the `retro` skill once a day. [workflow.md](workflow.md#corrections-and-retro) says how the log works. A test keeps each repeated correction tied to a check:
+
+```ts
+import { unenforcedCorrections } from '../repo-defaults/src/unenforcedCorrections.ts';
+
+test('each correction given twice has a check', () => {
+  expect(unenforcedCorrections(join(root, '.claude/corrections.md'))).toEqual([]);
+});
+```
 
 ### 10. CI
 
@@ -159,3 +169,79 @@ cp repo-defaults/templates/github/workflows/*.yml .github/workflows/
 ```
 
 `checks.yml` runs `check` and `test` on each push to `main`, in the merge queue, and when started by hand. `full.yml` runs `test:full` when started by hand or called from a release workflow. Neither runs on a pull request, because the hooks already ran the checks before the push.
+
+### 11. More checks
+
+Each of these is a function you call from a test, for the repos it fits.
+
+#### Public interface
+
+If other packages, apps, or repos import yours, print the exports of their entries and compare them with a committed file. The test fails when a name is added, removed, or changes its type, and the diff of the file shows the change to the owner. Rewrite the file with `-u` only once the owner agrees.
+
+```ts
+import { publicInterface } from '../repo-defaults/src/publicInterface.ts';
+
+test('the public interface changes only with the owner agreement', async () => {
+  await expect(
+    publicInterface([{ specifier: '@acme/sdk', path: join(root, 'packages/sdk/src/index.ts') }]),
+  ).toMatchFileSnapshot('./publicInterface.txt');
+});
+```
+
+#### Exact versions and release age
+
+Copy `repo-defaults/templates/pnpm/pnpm-workspace.yaml`, or add its `minimumReleaseAge` line to yours, so pnpm refuses a version younger than 14 days. If the lockfile already holds younger versions, `pnpm install --frozen-lockfile` fails until they turn 14 days old, so list them in `minimumReleaseAgeExclude` until then. Then pin each range to the version in the lockfile.
+
+```ts
+import { minimumReleaseAge } from '../repo-defaults/src/minimumReleaseAge.ts';
+import { versionRanges } from '../repo-defaults/src/versionRanges.ts';
+
+test('each dependency names an exact version', () => {
+  expect(versionRanges(root)).toEqual([]);
+});
+
+test('pnpm refuses a release younger than 14 days', () => {
+  expect(minimumReleaseAge(root)).toBeGreaterThanOrEqual(14 * 24 * 60);
+});
+```
+
+#### Property tests
+
+If the repo has property tests, give them one fixed seed in a setup file that every test project loads, such as `setupFiles: ['./vitest.setup.ts']`. With fast-check:
+
+```ts
+import fc from 'fast-check';
+import { beforeEach } from 'vitest';
+import { propertySeed } from './repo-defaults/src/propertySeed.ts';
+
+const seed = propertySeed(process.env);
+fc.configureGlobal({ seed });
+
+beforeEach(({ onTestFailed }) => {
+  onTestFailed(() => console.error(`Property tests drew their inputs with PROPERTY_SEED=${seed}.`));
+});
+```
+
+With Effect, call `Arbitrary.configureGlobal({ check: { seed: String(seed) } })` instead. `PROPERTY_SEED=<seed> pnpm vitest run` draws other inputs.
+
+#### Workspace checks
+
+In a workspace, these find a dependency that a package lists but doesn't use; a name that an entry exports but nothing uses; and a type beside a function that files in three or more folders import, which typescript.md moves to its own file. They read the whole workspace, so `vitest --changed` doesn't see the files they depend on. Run them from a test that the pre-push hook's `check` script runs. Pass `docs` for a doc outside the package READMEs that shows names to callers outside the workspace.
+
+```ts
+import { sharedTypes } from '../repo-defaults/src/sharedTypes.ts';
+import { unusedDependencies } from '../repo-defaults/src/unusedDependencies.ts';
+import { unusedEntryNames } from '../repo-defaults/src/unusedEntryNames.ts';
+
+test('each package lists only dependencies it uses', () => {
+  expect(unusedDependencies(root)).toEqual([]);
+});
+
+test('each entry exports only names that something uses', () => {
+  expect(unusedEntryNames(root, { docs: [join(root, 'docs/client.md')] })).toEqual([]);
+});
+
+test('a type that many folders import sits in a file of its own name', () => {
+  expect(sharedTypes(root)).toEqual([]);
+});
+```
