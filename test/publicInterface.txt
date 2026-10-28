@@ -52,6 +52,10 @@ repo-defaults/minimumReleaseAge
 
   const minimumReleaseAge: (root: string) => number | undefined
 
+repo-defaults/propertySeed
+
+  const propertySeed: (env: Readonly<Record<string, string | undefined>>) => number
+
 repo-defaults/publicInterface
 
   const publicInterface: (entries: readonly publicInterface.Entry[], options?: publicInterface.Options) => string

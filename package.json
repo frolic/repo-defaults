@@ -53,6 +53,11 @@
       "types": "./dist/minimumReleaseAge.d.ts",
       "default": "./dist/minimumReleaseAge.js"
     },
+    "./propertySeed": {
+      "src": "./src/propertySeed.ts",
+      "types": "./dist/propertySeed.d.ts",
+      "default": "./dist/propertySeed.js"
+    },
     "./publicInterface": {
       "src": "./src/publicInterface.ts",
       "types": "./dist/publicInterface.d.ts",

@@ -205,6 +205,25 @@ test('pnpm refuses a release younger than 14 days', () => {
 });
 ```
 
+#### Property tests
+
+If the repo has property tests, give them one fixed seed in a setup file that every test project loads, such as `setupFiles: ['./vitest.setup.ts']`. With fast-check:
+
+```ts
+import fc from 'fast-check';
+import { beforeEach } from 'vitest';
+import { propertySeed } from './repo-defaults/src/propertySeed.ts';
+
+const seed = propertySeed(process.env);
+fc.configureGlobal({ seed });
+
+beforeEach(({ onTestFailed }) => {
+  onTestFailed(() => console.error(`Property tests drew their inputs with PROPERTY_SEED=${seed}.`));
+});
+```
+
+With Effect, call `Arbitrary.configureGlobal({ check: { seed: String(seed) } })` instead. `PROPERTY_SEED=<seed> pnpm vitest run` draws other inputs.
+
 #### Unused dependencies and exports
 
 In a workspace, these find a dependency that a package lists but doesn't use, and a name that an entry exports but nothing uses. They read the whole workspace, so `vitest --changed` doesn't see the files they depend on. Run them from a test that the pre-push hook's `check` script runs. Pass `docs` for a doc outside the package READMEs that shows names to callers outside the workspace.
