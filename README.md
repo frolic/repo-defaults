@@ -31,7 +31,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 **Templates**
 
 - `templates/github/workflows/`: a Checks workflow for `main` and the merge queue, and a Full suite workflow for releases.
-- `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks.
+- `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks, and refuses a shell command that edits files in place (`src/refuseInPlaceEdits.ts`).
 - `templates/claude/corrections.md`: the log of the owner's corrections that the `retro` skill turns into checks.
 
 **Skills**

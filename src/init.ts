@@ -7,12 +7,13 @@
 // - link-skills links the skills and agents.
 // - core.hooksPath points at the shared git hooks, unless the repo has hooks of its own, and the
 //   package.json prepare script sets it again in each clone.
-// - .claude/settings.json blocks starting a CI run and skipping the hooks, if the repo has none.
+// - .claude/settings.json blocks starting a CI run and skipping the hooks, and refuses a shell
+//   command that edits files in place, if the repo has none.
 // - tsconfig.json extends the strict preset, if the repo has no tsconfig.json yet.
 //
 // It prints the steps left over, which the setup-repo-defaults skill does.
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const host = process.cwd();
@@ -115,15 +116,33 @@ if (manifest !== undefined) {
   }
 }
 
+// The template runs the hook from the submodule's source. A git dependency runs the built file.
+const refuseInPlaceEdits = submodule
+  ? 'repo-defaults/src/refuseInPlaceEdits.ts'
+  : 'node_modules/repo-defaults/dist/refuseInPlaceEdits.js';
 const settings = join(host, '.claude/settings.json');
 if (!existsSync(settings)) {
   mkdirSync(join(host, '.claude'), { recursive: true });
-  copyFileSync(join(host, prefix, 'templates/claude/settings.json'), settings);
-  done.push('.claude/settings.json blocks starting CI and skipping hooks');
-} else if (!readFileSync(settings, 'utf8').includes('gh workflow run')) {
-  skipped.push(
-    `.claude/settings.json: add the deny rules from ${prefix}/templates/claude/settings.json`,
+  const template = readFileSync(join(host, prefix, 'templates/claude/settings.json'), 'utf8');
+  writeFileSync(
+    settings,
+    template.replace('repo-defaults/src/refuseInPlaceEdits.ts', refuseInPlaceEdits),
   );
+  done.push(
+    '.claude/settings.json blocks starting CI, skipping hooks, and editing files from the shell',
+  );
+} else {
+  const text = readFileSync(settings, 'utf8');
+  if (!text.includes('gh workflow run')) {
+    skipped.push(
+      `.claude/settings.json: add the deny rules from ${prefix}/templates/claude/settings.json`,
+    );
+  }
+  if (!text.includes('refuseInPlaceEdits')) {
+    skipped.push(
+      `.claude/settings.json: add the PreToolUse hook from ${prefix}/templates/claude/settings.json, which runs ${refuseInPlaceEdits}`,
+    );
+  }
 }
 
 const preset = submodule

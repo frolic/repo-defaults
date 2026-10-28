@@ -25,7 +25,13 @@ export default defineConfig({
         rules: { 'defaults/one-export-per-file': 'off' },
       },
       {
-        files: ['src/commitMessage.ts', 'src/init.ts', 'src/linkSkills.ts', 'scripts/**'],
+        files: [
+          'src/commitMessage.ts',
+          'src/init.ts',
+          'src/linkSkills.ts',
+          'src/refuseInPlaceEdits.ts',
+          'scripts/**',
+        ],
         rules: { 'no-console': 'off' },
       },
     ],

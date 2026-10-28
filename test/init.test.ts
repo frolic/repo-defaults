@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdtempSync,
@@ -54,6 +54,20 @@ test('sets up an empty repo and changes nothing on a second run', () => {
   expect(git(dir, 'config', 'core.hooksPath')).toBe('repo-defaults/hooks');
   expect(read(dir, '.claude/settings.json')).toContain('Bash(gh workflow run:*)');
   expect(existsSync(join(dir, '.claude/skills/pr-review/SKILL.md'))).toBe(true);
+});
+
+test('the settings it writes refuse a shell command that edits a file in place', () => {
+  const dir = host();
+  init(dir);
+  const [hook] = JSON.parse(read(dir, '.claude/settings.json')).hooks.PreToolUse[0].hooks;
+  const run = (command: string) =>
+    spawnSync('sh', ['-c', hook.command], {
+      env: { ...process.env, CLAUDE_PROJECT_DIR: dir },
+      input: JSON.stringify({ tool_name: 'Bash', tool_input: { command } }),
+    }).status;
+
+  expect(run("sed -i 's/a/b/' AGENTS.md")).toBe(2);
+  expect(run('git status')).toBe(0);
 });
 
 test('adds to existing files and leaves the repo own hooks and settings alone', () => {

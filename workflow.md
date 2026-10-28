@@ -72,7 +72,7 @@ Each model call reads the whole context of a thread again, so the cost of a step
 - An agent that fixes review findings fixes only those findings. It reports any other change it thinks is needed, and doesn't make it.
 - Run a command that waits, such as a long test run, a deploy, or CI, in the background, and act on its notice when it ends. A loop that sleeps until a condition holds blocks other work and the person's messages.
 - Read large files by section: find the headings with `grep -n '^#'`, then read one section. Limit the output of a search.
-- Edit files with the Edit tool, not with `python` or `sed` scripts.
+- Edit files with the Edit tool, not with `python` or `sed` scripts. The hook in `templates/claude/settings.json` (`src/refuseInPlaceEdits.ts`) refuses `sed -i`, `perl -i`, and a script that writes files.
 - Pass the full 40-character SHA to a merge call.
 - Before a long CPU job, run it on a sample and say the expected time.
 
