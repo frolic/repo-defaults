@@ -2,4 +2,14 @@
 # Formats and lints the staged files, fixing what it can.
 set -e
 . "$(dirname "$0")/_run.sh"
+
+# When a commit replaces a folder with a link, a deleted file sits "beyond a symbolic link", so git
+# can't stash the tree and lint-staged's backup fails. Such a commit runs without the backup.
+# lint-staged and `vp staged` both take --no-stash.
+for link in $(git diff --cached --raw --no-renames --diff-filter=A | awk '$2 == "120000"' | cut -f2); do
+  if [ -n "$(git diff --cached --name-only --no-renames --diff-filter=D -- "$link/")" ]; then
+    run check:staged --no-stash
+    exit 0
+  fi
+done
 run check:staged

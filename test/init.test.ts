@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -139,6 +140,38 @@ test('finds the repo own hooks from a linked worktree', () => {
 
   expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
   expect(output).toContain(`git hooks: ${join(dir, '.git/hooks')} has commit-msg`);
+});
+
+// git can't stash a tree where a deleted file sits under a new link ("beyond a symbolic link"), so
+// lint-staged's backup fails unless the hook passes --no-stash.
+test('the pre-commit hook passes a commit that replaces a folder with a link', () => {
+  const dir = host();
+  writeFileSync(
+    join(dir, 'package.json'),
+    JSON.stringify({ scripts: { 'check:staged': 'vp staged' } }),
+  );
+  writeFileSync(join(dir, 'vite.config.ts'), "export default { staged: { '*': 'true' } };\n");
+  mkdirSync(join(dir, 'skill'));
+  mkdirSync(join(dir, 'shared'));
+  writeFileSync(join(dir, 'skill/SKILL.md'), 'Own copy\n');
+  writeFileSync(join(dir, 'shared/SKILL.md'), 'Shared copy\n');
+  init(dir);
+  const commit = (message: string) =>
+    execFileSync('git', ['commit', '--quiet', '-m', message], {
+      cwd: dir,
+      env: { ...env, PATH: `${join(root, 'node_modules/.bin')}:${process.env['PATH']}` },
+      stdio: 'pipe',
+    });
+  git(dir, 'add', 'package.json', 'vite.config.ts', 'skill', 'shared');
+  commit('Add the skill');
+
+  git(dir, 'rm', '-r', '--quiet', 'skill');
+  symlinkSync('shared', join(dir, 'skill'));
+  writeFileSync(join(dir, 'shared/SKILL.md'), 'Shared copy, edited\n');
+  git(dir, 'add', 'skill', 'shared');
+  commit('Link the shared skill');
+
+  expect(git(dir, 'ls-tree', 'HEAD', 'skill')).toMatch(/^120000 blob /);
 });
 
 test('refuses to run before repo-defaults is added', () => {

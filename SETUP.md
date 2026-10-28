@@ -133,7 +133,7 @@ Worktrees share one `.git/config`, so in a repo with linked worktrees this setti
 
 The hooks:
 
-- **pre-commit** runs the `check:staged` script.
+- **pre-commit** runs the `check:staged` script. When the commit replaces a folder with a link, git can't stash the tree, so it passes `--no-stash`, which lint-staged and `vp staged` both take.
 - **pre-push** checks that the lockfile matches each package.json, then runs `check` and `test:changed`. It holds a lock, so two worktrees don't push at once.
 - **commit-msg** runs the commit message checks.
 
