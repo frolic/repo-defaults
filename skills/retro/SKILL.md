@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Daily retro. Reads the past day's threads, commits, and verdicts. Finds the corrections and the rework that happened more than once, and turns each into a check that fails. Use when the daily scheduled task fires, or after a long piece of work.
+description: Daily retro. Reads the past day's threads, commits, and pull request reviews. Finds the corrections and the rework that happened more than once, and turns each into a check that fails. Use when the daily scheduled task fires, or after a long piece of work.
 ---
 
 # Retro
@@ -12,7 +12,7 @@ A correction the owner has to give twice is a gap in the process, not in the age
 The thread that runs the retro holds only the result. First list the threads, sessions, or chats that were active since the last retro, if your environment can read them. Write the owner's messages, and the agent replies they answer, to a scratch file. Pass that file to a fresh subagent, together with:
 
 - `git log --since` for the default branch and the open branches;
-- the verdicts posted on pull requests since the last retro (see the `pr-review` skill);
+- the reviews and comments posted on pull requests since the last retro;
 - `.claude/corrections.md`.
 
 ## 2. Find

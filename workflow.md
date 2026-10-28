@@ -7,13 +7,9 @@ How to work on a change in every repo that includes repo-defaults, for people an
 - A pull request keeps one focus, so a reviewer reads it in one mode and nothing gets buried. The usual kinds are a docs and comments sweep, a refactor (renames and moved files count), a new feature, and a migration (a dependency bump or a change in an external API). Work with another focus goes in its own pull request. Do a refactor first when it makes the feature easier, or after it to clean up. The docs and comments that a change makes wrong are part of that change.
 - Commit and push early and often.
 - Don't pass `--no-verify`. If a hook fails, fix what it found. In a repo that uses turbo, don't pass `--force` either, because it skips the cache and runs every task again.
+- Before a pull request is ready for review, run the `pr-review` skill. A second agent that didn't write the change reviews it, and the author judges each finding before fixing it.
 - To review the whole tree and plan the next changes, run the `codebase-review` skill. It changes no code.
 - To help a reviewer read a pull request, run the `walkthrough` skill.
-
-## Review and done
-
-- Before a pull request is ready for review, run the `pr-review` skill. Fresh agents that didn't write the change review it against its design and its brief, and the author judges each finding before fixing it.
-- Done means a verdict, not a report. A change is done when an agent that wrote none of it runs the checks, and the flows the change touches, at the head commit, and writes `PASS` or `PASS with notes` with the evidence for each claim. A new push needs a new verdict. The last step of `pr-review` gets it.
 
 ## Decide upstream
 
@@ -67,7 +63,7 @@ A correction the owner has to give twice is a gap in the process, not in the age
 - When the owner corrects an agent, the agent adds a row to `.claude/corrections.md` in the same turn, or raises the count of the row it repeats. Start the file from `templates/claude/corrections.md`.
 - A correction given twice becomes a check that fails. Fix it at the highest level that works: the design, then a type, then a lint rule, a hook, or a test, and last a line in a doc, because nothing fails when an agent skips a doc line. The row names the check, and a test that runs `unenforcedCorrections` from `src/unenforcedCorrections.ts` on the log fails while a row seen twice names none.
 - The repo's CLAUDE.md or AGENTS.md keeps a table of its rules, with two columns: the rule, and what enforces it. A rule in the table isn't repeated elsewhere in the file. A rule that only review enforces says "review", and one that nothing enforces yet says "nothing yet".
-- Run the `retro` skill once a day from a scheduled task, or after a long piece of work. It reads the day's threads, commits, and verdicts, logs the corrections nobody logged, and turns each repeat into a check.
+- Run the `retro` skill once a day from a scheduled task, or after a long piece of work. It reads the day's threads, commits, and pull request reviews, logs the corrections nobody logged, and turns each repeat into a check.
 
 ## Agent work
 
@@ -84,6 +80,6 @@ Each model call reads the whole context of a thread again, so the cost of a step
 
 ### Units of work
 
-A proposal lists its units, each marked pending or done. Each unit is one pull request and runs in a fresh agent, so the thread that coordinates them holds only the plan and the verdicts. The kickoff of a unit names three things: the proof of done (the tests, flows, or measurements that must pass), the files it may write, and the actions it must not take. It points to files instead of copying them, so the agent starts with a small context. The coordinator judges a unit by its diff and its verdict, not by the summary the agent returns. Start with one unit before you run several at once.
+A proposal lists its units, each marked pending or done. Each unit is one pull request and runs in a fresh agent, so the thread that coordinates them holds only the plan and the results. The kickoff of a unit names three things: the proof of done (the tests, flows, or measurements that must pass), the files it may write, and the actions it must not take. It points to files instead of copying them, so the agent starts with a small context. The coordinator judges a unit by its diff and its passing checks, not by the summary the agent returns. Start with one unit before you run several at once.
 
 An experiment shows what is possible, how it performs, or how it feels, and isn't meant to merge. Its pull request carries the `experiment` label and stays a draft. What it found goes in a doc, reviews skip its code, and a change that wants its idea starts again from that doc, as a unit that is meant to merge.
