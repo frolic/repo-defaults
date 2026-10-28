@@ -58,6 +58,7 @@ CI minutes cost money, so each check runs as early and as narrowly as it can, an
 
 - Every dependency names an exact version, such as `4.0.2`, and so does every entry of a pnpm catalog, so an install never picks up a release that nobody chose. Only a peer dependency is a range, because it says what the package works with. A test that runs `versionRanges` from `src/versionRanges.ts` checks this.
 - pnpm refuses a version published less than 14 days ago (`minimumReleaseAge: 20160` in pnpm-workspace.yaml, as in `templates/pnpm/pnpm-workspace.yaml`), so a hijacked release is found and pulled first. `minimumReleaseAge` from `src/minimumReleaseAge.ts` reads the setting for a test.
+- A package lists only the dependencies it imports, runs from a script, or needs as the peer of another dependency. A test that runs `unusedDependencies` from `src/unusedDependencies.ts` checks each package of the workspace.
 
 ## Corrections and retro
 

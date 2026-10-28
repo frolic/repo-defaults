@@ -204,3 +204,20 @@ test('pnpm refuses a release younger than 14 days', () => {
   expect(minimumReleaseAge(root)).toBeGreaterThanOrEqual(14 * 24 * 60);
 });
 ```
+
+#### Unused dependencies and exports
+
+In a workspace, these find a dependency that a package lists but doesn't use, and a name that an entry exports but nothing uses. They read the whole workspace, so `vitest --changed` doesn't see the files they depend on. Run them from a test that the pre-push hook's `check` script runs. Pass `docs` for a doc outside the package READMEs that shows names to callers outside the workspace.
+
+```ts
+import { unusedDependencies } from '../repo-defaults/src/unusedDependencies.ts';
+import { unusedEntryNames } from '../repo-defaults/src/unusedEntryNames.ts';
+
+test('each package lists only dependencies it uses', () => {
+  expect(unusedDependencies(root)).toEqual([]);
+});
+
+test('each entry exports only names that something uses', () => {
+  expect(unusedEntryNames(root, { docs: [join(root, 'docs/client.md')] })).toEqual([]);
+});
+```

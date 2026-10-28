@@ -27,6 +27,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `src/unenforcedCorrections.ts`: finds a correction in the log that was given twice and has no check yet.
 - `src/publicInterface.ts`: prints the exports of a package's entries through the TypeScript compiler, for a test that fails when the public interface changes.
 - `src/versionRanges.ts` and `src/minimumReleaseAge.ts`: find a dependency that names a range instead of an exact version, and read the release age that pnpm enforces.
+- `src/unusedDependencies.ts` and `src/unusedEntryNames.ts`: find a dependency that a workspace package doesn't use, and an exported name that nothing uses.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 - `init-repo-defaults`: does the setup steps that need no judgment.
 - `hooks/`: pre-commit, pre-push, and commit-msg hooks that run a repo's `check:staged`, `check`, and `test:changed` scripts.

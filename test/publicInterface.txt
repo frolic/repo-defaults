@@ -76,6 +76,19 @@ repo-defaults/unenforcedCorrections
       }[];
   }
 
+repo-defaults/unusedDependencies
+
+  const unusedDependencies: (root: string) => string[]
+
+repo-defaults/unusedEntryNames
+
+  const unusedEntryNames: (root: string, options?: unusedEntryNames.Options) => string[]
+  namespace unusedEntryNames {
+      type Options = {
+          docs?: readonly string[] | undefined;
+      };
+  }
+
 repo-defaults/versionRanges
 
   const versionRanges: (root: string) => string[]

@@ -63,6 +63,16 @@
       "types": "./dist/unenforcedCorrections.d.ts",
       "default": "./dist/unenforcedCorrections.js"
     },
+    "./unusedDependencies": {
+      "src": "./src/unusedDependencies.ts",
+      "types": "./dist/unusedDependencies.d.ts",
+      "default": "./dist/unusedDependencies.js"
+    },
+    "./unusedEntryNames": {
+      "src": "./src/unusedEntryNames.ts",
+      "types": "./dist/unusedEntryNames.d.ts",
+      "default": "./dist/unusedEntryNames.js"
+    },
     "./versionRanges": {
       "src": "./src/versionRanges.ts",
       "types": "./dist/versionRanges.d.ts",

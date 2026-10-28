@@ -39,6 +39,7 @@ A comment that explains your own code is a sign the code needs a better name or 
 
 ## API shape
 
+- A package entry exports only names that something uses: another package imports it, the package's README shows it, or the signature of another export refers to it. In a workspace, a test that runs `unusedEntryNames` from `src/unusedEntryNames.ts` checks this.
 - A function that returns a boolean starts with `is`, `has`, or `can`, unless a standard name exists, such as `equal`.
 - Choose parameters with these three rules, in order:
   - When a function is the analogue of a platform function, copy that function's signature.
