@@ -10,13 +10,13 @@
 
 Each step is independent, so take only the ones you want. The examples use the submodule paths. For a git dependency, swap in the paths from this table:
 
-| For | Submodule | Git dependency |
-| --- | --- | --- |
-| Modules | `./repo-defaults/src/oxc.ts` | `repo-defaults/oxc` |
-| tsconfig presets | `./repo-defaults/tsconfig/strict.json` | `repo-defaults/tsconfig/strict.json` |
-| Markdown and skills | `repo-defaults/writing.md` | `node_modules/repo-defaults/writing.md` |
-| Commands | `node repo-defaults/src/linkSkills.ts` | `pnpm exec link-skills` |
-| | `node repo-defaults/src/commitMessage.ts` | `pnpm exec check-commit-message` |
+| For                 | Submodule                                 | Git dependency                          |
+| ------------------- | ----------------------------------------- | --------------------------------------- |
+| Modules             | `./repo-defaults/src/oxc.ts`              | `repo-defaults/oxc`                     |
+| tsconfig presets    | `./repo-defaults/tsconfig/strict.json`    | `repo-defaults/tsconfig/strict.json`    |
+| Markdown and skills | `repo-defaults/writing.md`                | `node_modules/repo-defaults/writing.md` |
+| Commands            | `node repo-defaults/src/linkSkills.ts`    | `pnpm exec link-skills`                 |
+|                     | `node repo-defaults/src/commitMessage.ts` | `pnpm exec check-commit-message`        |
 
 ### 1. Add repo-defaults
 
@@ -139,13 +139,13 @@ A hook skips a script the repo doesn't have. If the repo has hooks of its own, c
 
 [workflow.md](workflow.md#checks-and-ci) lists where each check runs. Define these scripts with your repo's tools:
 
-| Script | Runs | Example |
-| --- | --- | --- |
-| `check:staged` | Format and lint the staged files | `vp staged` |
-| `check` | Format check, lint, and type-check | `vp check && tsc -b` |
+| Script         | Runs                                          | Example                            |
+| -------------- | --------------------------------------------- | ---------------------------------- |
+| `check:staged` | Format and lint the staged files              | `vp staged`                        |
+| `check`        | Format check, lint, and type-check            | `vp check && tsc -b`               |
 | `test:changed` | The tests the diff from `origin/main` affects | `vitest run --changed origin/main` |
-| `test` | The suite CI runs on `main` | `vitest run` |
-| `test:full` | Everything, before a release | `vitest run && pnpm test:e2e` |
+| `test`         | The suite CI runs on `main`                   | `vitest run`                       |
+| `test:full`    | Everything, before a release                  | `vitest run && pnpm test:e2e`      |
 
 ### 9. Agent settings
 

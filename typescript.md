@@ -45,6 +45,7 @@ A comment that explains your own code is a sign the code needs a better name or 
   - Inputs with distinct roles go in one object: `send({ subscription, payload, vapid })`. Start with the object form if a function might later need another such input, because moving from positionals to an object breaks callers and adding an option doesn't.
 
   Outside the platform case there are no optional positionals, no rest parameters, no positional that accepts `undefined`, no positional booleans and no overloads keyed on argument count or on an option's value. When an option would change the result type, write two functions instead.
+
 - Functions are sync unless an API they need is async.
 - Durations are milliseconds unless the wire format sets the unit.
 - Everything that can be cancelled takes `signal?: AbortSignal | undefined` in its options. Aborting rejects with `signal.reason`, as `fetch` does. Timeouts are left to `AbortSignal.timeout` and `AbortSignal.any` rather than a `timeout` option.
