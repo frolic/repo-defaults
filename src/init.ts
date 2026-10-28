@@ -9,11 +9,12 @@
 //   package.json prepare script sets it again in each clone.
 // - .claude/settings.json blocks starting a CI run and skipping the hooks, and refuses a shell
 //   command that edits files in place, if the repo has none.
+// - .claude/corrections.md starts the log of corrections, if the repo has none.
 // - tsconfig.json extends the strict preset, if the repo has no tsconfig.json yet.
 //
 // It prints the steps left over, which the setup-repo-defaults skill does.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const host = process.cwd();
@@ -143,6 +144,12 @@ if (!existsSync(settings)) {
       `.claude/settings.json: add the PreToolUse hook from ${prefix}/templates/claude/settings.json, which runs ${refuseInPlaceEdits}`,
     );
   }
+}
+
+const corrections = join(host, '.claude/corrections.md');
+if (!existsSync(corrections)) {
+  copyFileSync(join(host, prefix, 'templates/claude/corrections.md'), corrections);
+  done.push('.claude/corrections.md logs the corrections that the retro skill turns into checks');
 }
 
 const preset = submodule

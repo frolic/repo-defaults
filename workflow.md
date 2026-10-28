@@ -59,7 +59,7 @@ CI minutes cost money, so each check runs as early and as narrowly as it can, an
 A correction the owner has to give twice is a gap in the process, not in the agent, and a check closes it.
 
 - When the owner corrects an agent, the agent adds a row to `.claude/corrections.md` in the same turn, or raises the count of the row it repeats. Start the file from `templates/claude/corrections.md`.
-- A correction given twice becomes a check that fails. Fix it at the highest level that works: the design, then a type, then a lint rule, a hook, or a test, and last a line in a doc, because nothing fails when an agent skips a doc line. The row names the check.
+- A correction given twice becomes a check that fails. Fix it at the highest level that works: the design, then a type, then a lint rule, a hook, or a test, and last a line in a doc, because nothing fails when an agent skips a doc line. The row names the check, and a test that runs `unenforcedCorrections` from `src/unenforcedCorrections.ts` on the log fails while a row seen twice names none.
 - The repo's CLAUDE.md or AGENTS.md keeps a table of its rules, with two columns: the rule, and what enforces it. A rule in the table isn't repeated elsewhere in the file. A rule that only review enforces says "review", and one that nothing enforces yet says "nothing yet".
 - Run the `retro` skill once a day from a scheduled task, or after a long piece of work. It reads the day's threads, commits, and verdicts, logs the corrections nobody logged, and turns each repeat into a check.
 

@@ -48,6 +48,11 @@
       "types": "./dist/prose.d.ts",
       "default": "./dist/prose.js"
     },
+    "./unenforcedCorrections": {
+      "src": "./src/unenforcedCorrections.ts",
+      "types": "./dist/unenforcedCorrections.d.ts",
+      "default": "./dist/unenforcedCorrections.js"
+    },
     "./tsconfig/strict.json": "./tsconfig/strict.json",
     "./tsconfig/library.json": "./tsconfig/library.json",
     "./package.json": "./package.json"

@@ -39,7 +39,13 @@ const read = (dir: string, path: string) => readFileSync(join(dir, path), 'utf8'
 test('sets up an empty repo and changes nothing on a second run', () => {
   const dir = host();
   init(dir);
-  const files = ['CLAUDE.md', 'AGENTS.md', 'tsconfig.json', '.claude/settings.json'];
+  const files = [
+    'CLAUDE.md',
+    'AGENTS.md',
+    'tsconfig.json',
+    '.claude/settings.json',
+    '.claude/corrections.md',
+  ];
   const first = files.map((path) => read(dir, path));
   init(dir);
 

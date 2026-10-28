@@ -151,6 +151,16 @@ A hook skips a script the repo doesn't have. If the repo has hooks of its own, c
 
 Copy `repo-defaults/templates/claude/settings.json` to `.claude/settings.json`, or add its `deny` rules and its `hooks` to yours. The rules stop Claude Code from starting or re-running a CI job and from passing `--no-verify`. The hook runs `src/refuseInPlaceEdits.ts` before each shell command, and refuses `sed -i`, `perl -i`, and a script that writes files, so each change goes through the Edit or Write tool and shows as a diff. For the git dependency, the hook runs `node_modules/repo-defaults/dist/refuseInPlaceEdits.js` instead, and init writes that path.
 
+Copy `repo-defaults/templates/claude/corrections.md` to `.claude/corrections.md`, and schedule the `retro` skill once a day. [workflow.md](workflow.md#corrections-and-retro) says how the log works. A test keeps each repeated correction tied to a check:
+
+```ts
+import { unenforcedCorrections } from '../repo-defaults/src/unenforcedCorrections.ts';
+
+test('each correction given twice has a check', () => {
+  expect(unenforcedCorrections(join(root, '.claude/corrections.md'))).toEqual([]);
+});
+```
+
 ### 10. CI
 
 ```sh
