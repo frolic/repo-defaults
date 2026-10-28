@@ -68,6 +68,11 @@
       "types": "./dist/unenforcedCorrections.d.ts",
       "default": "./dist/unenforcedCorrections.js"
     },
+    "./sharedTypes": {
+      "src": "./src/sharedTypes.ts",
+      "types": "./dist/sharedTypes.d.ts",
+      "default": "./dist/sharedTypes.js"
+    },
     "./unusedDependencies": {
       "src": "./src/unusedDependencies.ts",
       "types": "./dist/unusedDependencies.d.ts",

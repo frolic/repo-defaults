@@ -224,11 +224,12 @@ beforeEach(({ onTestFailed }) => {
 
 With Effect, call `Arbitrary.configureGlobal({ check: { seed: String(seed) } })` instead. `PROPERTY_SEED=<seed> pnpm vitest run` draws other inputs.
 
-#### Unused dependencies and exports
+#### Workspace checks
 
-In a workspace, these find a dependency that a package lists but doesn't use, and a name that an entry exports but nothing uses. They read the whole workspace, so `vitest --changed` doesn't see the files they depend on. Run them from a test that the pre-push hook's `check` script runs. Pass `docs` for a doc outside the package READMEs that shows names to callers outside the workspace.
+In a workspace, these find a dependency that a package lists but doesn't use; a name that an entry exports but nothing uses; and a type beside a function that files in three or more folders import, which typescript.md moves to its own file. They read the whole workspace, so `vitest --changed` doesn't see the files they depend on. Run them from a test that the pre-push hook's `check` script runs. Pass `docs` for a doc outside the package READMEs that shows names to callers outside the workspace.
 
 ```ts
+import { sharedTypes } from '../repo-defaults/src/sharedTypes.ts';
 import { unusedDependencies } from '../repo-defaults/src/unusedDependencies.ts';
 import { unusedEntryNames } from '../repo-defaults/src/unusedEntryNames.ts';
 
@@ -238,5 +239,9 @@ test('each package lists only dependencies it uses', () => {
 
 test('each entry exports only names that something uses', () => {
   expect(unusedEntryNames(root, { docs: [join(root, 'docs/client.md')] })).toEqual([]);
+});
+
+test('a type that many folders import sits in a file of its own name', () => {
+  expect(sharedTypes(root)).toEqual([]);
 });
 ```

@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, test } from 'vite-plus/test';
+import { sharedTypes } from '../src/sharedTypes.ts';
 import { unusedDependencies } from '../src/unusedDependencies.ts';
 import { unusedEntryNames } from '../src/unusedEntryNames.ts';
 
@@ -59,6 +60,33 @@ function workspace() {
   }
   return dir;
 }
+
+test('a type that files in three or more folders import sits in a file of its own name', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'workspace-'));
+  const files = {
+    'package.json': json({ name: 'acme', private: true }),
+    'pnpm-workspace.yaml': 'packages:\n  - packages/*\n',
+    'packages/core/package.json': json({ name: 'core', exports: { '.': './src/index.ts' } }),
+    'packages/core/src/index.ts': [
+      "export { send, type Options } from './send.ts';",
+      "export * from './read.ts';",
+      "export type { Status } from './Status.ts';",
+    ].join('\n'),
+    'packages/core/src/send.ts': 'export type Options = {};\nexport function send() {}\n',
+    'packages/core/src/read.ts': 'export type Page = {};\nexport function read() {}\n',
+    'packages/core/src/Status.ts': 'export type Status = {};\n',
+    'packages/core/src/feed/list.ts': "import type { Options } from '../send.js';\n",
+    'packages/app/package.json': json({ name: 'app' }),
+    'packages/app/src/a/a.ts': "import type { Options, Page, Status } from 'core';\n",
+    'packages/app/src/b/b.ts': "import type { Options, Page, Status } from 'core';\n",
+    'packages/app/src/c/c.ts': "import type { Options, Status } from 'core';\n",
+  };
+  for (const [path, text] of Object.entries(files)) {
+    mkdirSync(dirname(join(dir, path)), { recursive: true });
+    writeFileSync(join(dir, path), text);
+  }
+  expect(sharedTypes(dir)).toEqual(['packages/core/src/send.ts Options (4 folders)']);
+});
 
 test('lists only dependencies that a package imports, runs, or that another dependency needs', () => {
   expect(unusedDependencies(workspace())).toEqual(['packages/core: unused']);

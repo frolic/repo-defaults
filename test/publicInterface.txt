@@ -80,6 +80,10 @@ repo-defaults/unenforcedCorrections
       }[];
   }
 
+repo-defaults/sharedTypes
+
+  const sharedTypes: (root: string) => string[]
+
 repo-defaults/unusedDependencies
 
   const unusedDependencies: (root: string) => string[]

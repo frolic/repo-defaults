@@ -29,6 +29,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `src/versionRanges.ts` and `src/minimumReleaseAge.ts`: find a dependency that names a range instead of an exact version, and read the release age that pnpm enforces.
 - `src/propertySeed.ts`: the fixed seed for property tests, which `PROPERTY_SEED` changes.
 - `src/unusedDependencies.ts` and `src/unusedEntryNames.ts`: find a dependency that a workspace package doesn't use, and an exported name that nothing uses.
+- `src/sharedTypes.ts`: finds a type beside a function that files in three or more folders import, so it moves to its own file.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 - `init-repo-defaults`: does the setup steps that need no judgment.
 - `hooks/`: pre-commit, pre-push, and commit-msg hooks that run a repo's `check:staged`, `check`, and `test:changed` scripts.
