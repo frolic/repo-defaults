@@ -25,6 +25,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `src/prose.ts`: finds a made-up actor, a missing serial comma, ruled-out words, a package name in a code span, and a goal named by an id, and counts a doc's words for its word budget.
 - `check-commit-message`: runs two of those checks on a commit message.
 - `src/unenforcedCorrections.ts`: finds a correction in the log that was given twice and has no check yet.
+- `src/publicInterface.ts`: prints the exports of a package's entries through the TypeScript compiler, for a test that fails when the public interface changes.
 - `link-skills`: links skills and agents into `.claude/` and `.agents/`.
 - `init-repo-defaults`: does the setup steps that need no judgment.
 - `hooks/`: pre-commit, pre-push, and commit-msg hooks that run a repo's `check:staged`, `check`, and `test:changed` scripts.

@@ -169,3 +169,19 @@ cp repo-defaults/templates/github/workflows/*.yml .github/workflows/
 ```
 
 `checks.yml` runs `check` and `test` on each push to `main`, in the merge queue, and when started by hand. `full.yml` runs `test:full` when started by hand or called from a release workflow. Neither runs on a pull request, because the hooks already ran the checks before the push.
+
+### 11. More checks
+
+Each of these is a function you call from a test, for the repos it fits.
+
+**Public interface.** If other packages, apps, or repos import yours, print the exports of their entries and compare them with a committed file. The test fails when a name is added, removed, or changes its type, and the diff of the file shows the change to the owner. Rewrite the file with `-u` only once the owner agrees.
+
+```ts
+import { publicInterface } from '../repo-defaults/src/publicInterface.ts';
+
+test('the public interface changes only with the owner agreement', async () => {
+  await expect(
+    publicInterface([{ specifier: '@acme/sdk', path: join(root, 'packages/sdk/src/index.ts') }]),
+  ).toMatchFileSnapshot('./publicInterface.txt');
+});
+```

@@ -48,6 +48,11 @@
       "types": "./dist/prose.d.ts",
       "default": "./dist/prose.js"
     },
+    "./publicInterface": {
+      "src": "./src/publicInterface.ts",
+      "types": "./dist/publicInterface.d.ts",
+      "default": "./dist/publicInterface.js"
+    },
     "./unenforcedCorrections": {
       "src": "./src/unenforcedCorrections.ts",
       "types": "./dist/unenforcedCorrections.d.ts",

@@ -31,7 +31,7 @@ The owner reads a short design, not the code, so the decisions that need the own
 | Trapdoor | A decision that stored data or other parties will depend on, so it is hard to undo, such as a frozen format, a schema, or a key layout. | The cases it solves and the cases it doesn't. What changing it later would take. |
 | Taste or scope | A finding that needs judgment, such as two goals in tension, a flow that feels wrong, or a new kind of work. | What was found, the options, and a recommendation. |
 
-A change to a repo's goals or architecture docs is an interface change at the level above. A refactor behind an interface whose tests pass is not, and neither is a review finding the author can fix.
+To make an interface change fail a test until the owner agrees, print the exports of the public entries with `publicInterface` from `src/publicInterface.ts` and compare them with a committed file. A diff of that file is the diff of the interface, and only the owner's agreement allows rewriting it. A change to a repo's goals or architecture docs is an interface change at the level above. A refactor behind an interface whose tests pass is not, and neither is a review finding the author can fix.
 
 - A question fits on one screen. It leads with the decision and a recommendation, and the owner can answer it without reading the code. If you aren't sure whether to ask, ask yourself whether the owner would be surprised to find it later.
 - Only the owner closes a question. Record the decision in the proposal with the owner's words, quoted, and a link to the message. A question without an answer stays open, and the work continues on the recommended option where that can be undone.

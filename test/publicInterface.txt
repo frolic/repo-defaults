@@ -1,0 +1,73 @@
+repo-defaults/prose
+
+  const check: (files: readonly string[], options: check.Options) => Finding[]
+  namespace check {
+      type Options = {
+          root: string;
+          tables?: readonly string[] | undefined;
+          skip?: Partial<Record<Rule, readonly string[]>> | undefined;
+      };
+  }
+
+  const countWords: (file: string) => number
+
+  const findCodePackageName: (line: string) => string | undefined
+
+  const findGoalId: (line: string) => string | undefined
+
+  type Finding = {
+      file: string;
+      line: number;
+      rule: Rule;
+      text: string;
+  };
+
+  const findMadeUpActor: (line: string) => string | undefined
+
+  const findMissingSerialComma: (line: string) => string | undefined
+
+  const findRuledOutWord: (line: string) => string | undefined
+
+  const proseLines: (file: string, options?: proseLines.Options) => proseLines.ReturnType
+  namespace proseLines {
+      type Options = {
+          table?: boolean | undefined;
+      };
+      type ReturnType = {
+          line: number;
+          text: string;
+      }[];
+  }
+
+  type Rule = 'made-up-actor' | 'serial-comma' | 'ruled-out-word' | 'code-package-name' | 'goal-id';
+
+  const walk: (dir: string, options?: walk.Options) => string[]
+  namespace walk {
+      type Options = {
+          skip?: readonly string[] | undefined;
+      };
+  }
+
+repo-defaults/publicInterface
+
+  const publicInterface: (entries: readonly publicInterface.Entry[], options?: publicInterface.Options) => string
+  namespace publicInterface {
+      type Entry = {
+          specifier: string;
+          path: string;
+      };
+      type Options = {
+          compilerOptions?: ts.CompilerOptions | undefined;
+      };
+  }
+
+repo-defaults/unenforcedCorrections
+
+  const unenforcedCorrections: (file: string) => unenforcedCorrections.ReturnType
+  namespace unenforcedCorrections {
+      type ReturnType = {
+          line: number;
+          correction: string;
+          seen: number;
+      }[];
+  }
