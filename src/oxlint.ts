@@ -264,6 +264,247 @@ const noEnum = {
   }),
 } satisfies Rule;
 
+type Context = Parameters<Extract<Rule, { create: unknown }>['create']>[0];
+
+type Statement = Context['sourceCode']['ast']['body'][number];
+
+type Kind = 'type' | 'value';
+
+const typeDeclarations = new Set(['TSTypeAliasDeclaration', 'TSInterfaceDeclaration']);
+
+// The names that a top-level statement declares, whether it exports them or not, each as a type
+// or a value.
+function declaredBy(statement: Statement): { name: string; kind: Kind }[] {
+  const declaration =
+    statement.type === 'ExportNamedDeclaration' || statement.type === 'ExportDefaultDeclaration'
+      ? statement.declaration
+      : statement;
+  if (declaration === null || declaration === undefined) {
+    return [];
+  }
+  if (declaration.type === 'ImportDeclaration') {
+    return declaration.specifiers.map((specifier) => ({
+      name: specifier.local.name,
+      kind:
+        declaration.importKind === 'type' ||
+        ('importKind' in specifier && specifier.importKind === 'type')
+          ? 'type'
+          : 'value',
+    }));
+  }
+  if (declaration.type === 'VariableDeclaration') {
+    return declaration.declarations.map((declarator) => ({
+      name: declarator.id.type === 'Identifier' ? declarator.id.name : '',
+      kind: 'value',
+    }));
+  }
+  if ('id' in declaration && declaration.id?.type === 'Identifier') {
+    return [
+      {
+        name: declaration.id.name,
+        kind: typeDeclarations.has(declaration.type) ? 'type' : 'value',
+      },
+    ];
+  }
+  return [];
+}
+
+// The names that a top-level statement exports from this file, each as a type or a value. A
+// re-export (`export … from`) exports names from another file, so it gives none.
+function exportsOf(
+  statement: Statement,
+  kindOf: (name: string) => Kind,
+): { name: string; kind: Kind; statement: Statement }[] {
+  if (statement.type !== 'ExportNamedDeclaration' || statement.source !== null) {
+    return [];
+  }
+  if (statement.declaration !== null) {
+    return declaredBy(statement).map(({ name, kind }) => ({ name, kind, statement }));
+  }
+  return statement.specifiers.map((specifier) => ({
+    name:
+      specifier.exported.type === 'Identifier' ? specifier.exported.name : specifier.exported.value,
+    kind:
+      statement.exportKind === 'type' || specifier.exportKind === 'type'
+        ? 'type'
+        : specifier.local.type === 'Identifier'
+          ? kindOf(specifier.local.name)
+          : 'value',
+    statement,
+  }));
+}
+
+const functionsAndClasses = new Set([
+  'ArrowFunctionExpression',
+  'FunctionExpression',
+  'ClassExpression',
+]);
+
+// `export const` of values that are not functions or classes.
+function isPlainConstant(statement: Statement): boolean {
+  if (
+    statement.type !== 'ExportNamedDeclaration' ||
+    statement.declaration?.type !== 'VariableDeclaration' ||
+    statement.declaration.kind !== 'const'
+  ) {
+    return false;
+  }
+  return statement.declaration.declarations.every(
+    (declarator) => declarator.init === null || !functionsAndClasses.has(declarator.init.type),
+  );
+}
+
+// A Worker's default export: an object literal with a `fetch` handler.
+function isWorkerDefault(statement: Statement): boolean {
+  if (
+    statement.type !== 'ExportDefaultDeclaration' ||
+    statement.declaration.type !== 'ObjectExpression'
+  ) {
+    return false;
+  }
+  return statement.declaration.properties.some(
+    (property) =>
+      property.type === 'Property' &&
+      property.key.type === 'Identifier' &&
+      property.key.name === 'fetch',
+  );
+}
+
+/**
+ * Reports a file that exports a function, class, or const named other than the file, so each file
+ * holds one function or class and a reader finds it by the file's name. Its own types, such as its
+ * options and its result, may sit beside it. A file that exports only types exports one with the
+ * file's name. A `constants.ts` in a feature's folder, not at the top of `src/`, may export many
+ * plain constants of that feature. A default export has no name, and a re-export comes from another
+ * file, so both pass, and so does a Worker's file, whose default export is an object with `fetch`
+ * and which exports the classes the runtime binds by name.
+ */
+const oneExportPerFile = {
+  meta: {
+    type: 'suggestion',
+    messages: {
+      oneValuePerFile:
+        'Export one function, class, or const from this file, named `{{ baseName }}`. Move `{{ name }}` to a file of its own name.',
+      typesNamedForFile:
+        'This file exports only types, so one of them is named `{{ baseName }}`. Move the others.',
+      scopedConstants:
+        "A `constants.ts` holds only the plain constants of one feature, in that feature's folder, never at the top of `src/`. Move `{{ name }}`.",
+    },
+  },
+  create: (context) => ({
+    Program: (program) => {
+      if (/\.d\.[cm]?ts$/.test(context.filename) || program.body.some(isWorkerDefault)) {
+        return;
+      }
+      const baseName = context.filename.replace(/^.*[\\/]/, '').replace(/\.[cm]?[jt]sx?$/, '');
+      const declared = new Map<string, Kind>();
+      for (const { name, kind } of program.body.flatMap(declaredBy)) {
+        declared.set(name, declared.get(name) === 'value' ? 'value' : kind);
+      }
+      const exported = program.body.flatMap((statement) =>
+        exportsOf(statement, (name) => declared.get(name) ?? 'value'),
+      );
+      const values = exported.filter(({ kind }) => kind === 'value');
+      const isScopedConstants =
+        baseName === 'constants' && !/[\\/]src[\\/]constants\.[cm]?[jt]sx?$/.test(context.filename);
+      for (const { name, statement } of values) {
+        if (isScopedConstants && isPlainConstant(statement)) {
+          continue;
+        }
+        if (baseName === 'constants') {
+          context.report({ node: statement, messageId: 'scopedConstants', data: { name } });
+        } else if (name !== baseName) {
+          context.report({
+            node: statement,
+            messageId: 'oneValuePerFile',
+            data: { baseName, name },
+          });
+        }
+      }
+      const types = exported.filter(({ kind }) => kind === 'type');
+      const hasDefault = program.body.some(
+        (statement) => statement.type === 'ExportDefaultDeclaration',
+      );
+      if (
+        values.length === 0 &&
+        !hasDefault &&
+        types[0] !== undefined &&
+        !types.some(({ name }) => name === baseName)
+      ) {
+        context.report({
+          node: types[0].statement,
+          messageId: 'typesNamedForFile',
+          data: { baseName },
+        });
+      }
+    },
+  }),
+} satisfies Rule;
+
+// The verbs that may start the name of a flag that asks for an action. A repo adds its own with
+// the rule's `verbs` option.
+const actionVerbs = ['compress', 'discard', 'drop', 'fill', 'hide', 'hold', 'replace'];
+
+type TypeNode = { type: string; types?: readonly TypeNode[] | undefined };
+
+// `boolean`, or a union of `boolean` with `undefined` or `null`, such as an optional flag.
+function isBooleanType(type: TypeNode): boolean {
+  if (type.type === 'TSBooleanKeyword') {
+    return true;
+  }
+  const members = (type.type === 'TSUnionType' ? (type.types ?? []) : []).map(({ type }) => type);
+  return (
+    members.includes('TSBooleanKeyword') &&
+    members.every((member) =>
+      ['TSBooleanKeyword', 'TSUndefinedKeyword', 'TSNullKeyword'].includes(member),
+    )
+  );
+}
+
+const isBoolean = (annotation: unknown) =>
+  isNode(annotation) && isBooleanType(annotation['typeAnnotation'] as TypeNode);
+
+/**
+ * Reports a variable, a parameter, or a property of type `boolean` (also with `undefined` or
+ * `null`) whose name doesn't start with `is`, `has`, or an action verb, so the name says whether it
+ * describes something (`isOnline`) or asks for an action (`compress`). The `verbs` option adds to
+ * the verbs in `actionVerbs`.
+ */
+const booleanName = {
+  meta: {
+    type: 'suggestion',
+    schema: [
+      {
+        type: 'object',
+        properties: { verbs: { type: 'array', items: { type: 'string' } } },
+        additionalProperties: false,
+      },
+    ],
+    messages: {
+      booleanName:
+        'Name a boolean that describes something with `is` or `has` (`isOnline`). A flag that asks for an action starts with a verb, such as `compress`; add a verb with the `verbs` option of `defaults/boolean-name`.',
+    },
+  },
+  create: (context) => {
+    const [options] = context.options as [{ verbs?: string[] | undefined }?];
+    const verbs = new Set([...actionVerbs, ...(options?.verbs ?? [])]);
+    const isAllowed = (name: string) =>
+      /^(?:is|has)[A-Z]/.test(name) || verbs.has(/^[a-z]+/.exec(name)?.[0] ?? name);
+    const check = (key: unknown, annotation: unknown) => {
+      if (isNode(key) && key.type === 'Identifier' && isBoolean(annotation)) {
+        if (!isAllowed(key['name'] as string)) {
+          context.report({ node: key as never, messageId: 'booleanName' });
+        }
+      }
+    };
+    return {
+      Identifier: (node) => check(node, 'typeAnnotation' in node ? node.typeAnnotation : null),
+      TSPropertySignature: (node) => check(node.key, node.typeAnnotation),
+      PropertyDefinition: (node) => check(node.key, node.typeAnnotation),
+    };
+  },
+} satisfies Rule;
+
 /**
  * The oxlint rules under the `defaults` prefix. The `lint` settings in `oxc.ts` load the plugin and
  * turn on every rule.
@@ -271,8 +512,10 @@ const noEnum = {
 const plugin = {
   meta: { name: 'defaults' },
   rules: {
+    'boolean-name': booleanName,
     'import-extension': importExtension,
     'no-enum': noEnum,
+    'one-export-per-file': oneExportPerFile,
     'optional-undefined': optionalUndefined,
     'prefer-satisfies': preferSatisfies,
     'type-parameter-name': typeParameterName,
@@ -282,8 +525,10 @@ const plugin = {
 type Plugin = {
   meta: { name: string };
   rules: Record<
+    | 'boolean-name'
     | 'import-extension'
     | 'no-enum'
+    | 'one-export-per-file'
     | 'optional-undefined'
     | 'prefer-satisfies'
     | 'type-parameter-name',

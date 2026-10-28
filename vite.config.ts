@@ -19,6 +19,12 @@ export default defineConfig({
         rules: { 'import/no-default-export': 'off' },
       },
       {
+        // Other repos import these modules by path (`repo-defaults/prose`, `repo-defaults/oxc`),
+        // so splitting them changes the public interface, which needs the owner's agreement.
+        files: ['src/prose.ts', 'src/oxc.ts'],
+        rules: { 'defaults/one-export-per-file': 'off' },
+      },
+      {
         files: ['src/commitMessage.ts', 'src/init.ts', 'src/linkSkills.ts', 'scripts/**'],
         rules: { 'no-console': 'off' },
       },

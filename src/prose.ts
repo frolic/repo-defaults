@@ -185,6 +185,7 @@ export function proseLines(file: string, options: proseLines.Options = {}): pros
 export declare namespace proseLines {
   type Options = {
     /** Leave out the first cell of each table row, which holds sentences to avoid. */
+    // oxlint-disable-next-line defaults/boolean-name -- a public option, renamed only with the owner's agreement
     table?: boolean | undefined;
   };
   type ReturnType = { line: number; text: string }[];

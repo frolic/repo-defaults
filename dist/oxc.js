@@ -49,8 +49,10 @@ export const lint = {
         // Every if, else, and loop body needs braces, so a reader always sees where the body ends.
         curly: ['error', 'all'],
         'no-console': 'error',
+        'defaults/boolean-name': 'error',
         'defaults/import-extension': 'error',
         'defaults/no-enum': 'error',
+        'defaults/one-export-per-file': 'error',
         'defaults/optional-undefined': 'error',
         'defaults/prefer-satisfies': 'error',
         'defaults/type-parameter-name': 'error',

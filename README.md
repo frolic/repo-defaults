@@ -18,7 +18,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - `tsconfig/strict.json`: strict compiler options.
 - `tsconfig/library.json`: `strict.json` plus declaration output, for a published library.
 - `src/oxc.ts`: `fmt` and `lint` settings for `vite.config.ts`.
-- `src/oxlint.ts`: five lint rules under `defaults/`: `import-extension`, `no-enum`, `optional-undefined`, `prefer-satisfies`, and `type-parameter-name`.
+- `src/oxlint.ts`: seven lint rules under `defaults/`: `boolean-name`, `import-extension`, `no-enum`, `one-export-per-file`, `optional-undefined`, `prefer-satisfies`, and `type-parameter-name`.
 
 **Checks and commands**
 
