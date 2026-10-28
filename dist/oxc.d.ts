@@ -12,6 +12,7 @@ export declare const fmt: {
     semi: true;
     trailingComma: "all";
     printWidth: number;
+    sortPackageJson: false;
     ignorePatterns: string[];
 };
 /**

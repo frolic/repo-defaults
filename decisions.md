@@ -2,6 +2,12 @@
 
 Choices made in this repo, with the options considered and the reason for each. Newest first.
 
+## oxfmt formats Markdown and package.json, and doesn't sort package.json
+
+- **Options:** leave Markdown and package.json unformatted; format both with oxfmt's default, which sorts the keys of package.json; format both with `sortPackageJson: false`.
+- **Trade-offs:** formatted Markdown keeps tables aligned, which matters in a repo whose docs are mostly tables. zile publishes only the package.json fields after its `[!start-pkg]` key. oxfmt's sort moves that key to the end, so zile would publish no fields at all, and oxfmt has no option to sort only on each side of a key: `sortPackageJson` takes only `sortScripts`.
+- **Chosen:** format both, with `sortPackageJson: false`. Keys stay in the order they were written, and oxfmt still fixes indentation and line breaks. `test/fmt.test.ts` runs oxfmt with these settings on a zile package.json and on Markdown.
+
 ## CI runs only on `main` and in the merge queue
 
 - **Options:** run every check on each pull request; run checks in git hooks and CI only on `main` and the merge queue; no CI at all.

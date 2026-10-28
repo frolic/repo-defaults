@@ -18,14 +18,11 @@ export const fmt = {
     semi: true,
     trailingComma: 'all',
     printWidth: 100,
-    ignorePatterns: [
-        '**/*.md',
-        '**/package.json',
-        '**/CHANGELOG.md',
-        '**/fixtures/**',
-        '.agents/**',
-        'repo-defaults/**',
-    ],
+    // oxfmt sorts the keys of package.json by default, which moves zile's `[!start-pkg]` marker to
+    // the end, so zile would publish none of the fields after it. oxfmt has no option to keep a key
+    // in place, so package.json is formatted without sorting.
+    sortPackageJson: false,
+    ignorePatterns: ['**/CHANGELOG.md', '**/fixtures/**', '.agents/**', 'repo-defaults/**'],
 };
 /**
  * The oxlint settings: plugins, categories, the rules every repo turns on or off, and the
