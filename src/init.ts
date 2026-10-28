@@ -13,7 +13,7 @@
 // It prints the steps left over, which the setup-repo-defaults skill does.
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 const host = process.cwd();
 const prefix = existsSync(join(host, 'repo-defaults/package.json'))
@@ -75,7 +75,16 @@ const git = (...args: string[]) => {
 const hooks = `${prefix}/hooks`;
 const setHooks = `git config core.hooksPath ${hooks}`;
 const hooksPath = git('config', 'core.hooksPath');
+// git prints the hooks folder relative to the working tree in the main worktree, and as an
+// absolute path in a linked one.
 const gitHooks = git('rev-parse', '--git-path', 'hooks');
+// A linked worktree shares .git/config with every other worktree. core.hooksPath set there turns
+// the hooks off in each worktree whose branch doesn't have repo-defaults yet, so init sets it only
+// in the worktree's own config, which git reads when extensions.worktreeConfig is on.
+const isLinkedWorktree =
+  git('rev-parse', '--path-format=absolute', '--git-dir') !==
+  git('rev-parse', '--path-format=absolute', '--git-common-dir');
+const hasWorktreeConfig = git('config', '--bool', 'extensions.worktreeConfig') === 'true';
 if (gitHooks === undefined) {
   skipped.push('git hooks: not a git repo');
 } else if (hooksPath === hooks) {
@@ -86,10 +95,17 @@ if (gitHooks === undefined) {
   );
 } else {
   const own = ['pre-commit', 'pre-push', 'commit-msg'].filter((name) =>
-    existsSync(join(host, gitHooks, name)),
+    existsSync(resolve(host, gitHooks, name)),
   );
   if (own.length) {
     skipped.push(`git hooks: ${gitHooks} has ${own.join(', ')}, so merge them into ${hooks}/`);
+  } else if (isLinkedWorktree && !hasWorktreeConfig) {
+    skipped.push(
+      `git hooks: this is a linked worktree, which shares core.hooksPath with every other worktree, so run \`git config extensions.worktreeConfig true\` and \`git config --worktree core.hooksPath ${hooks}\`, or run init again from the main worktree once repo-defaults is on its branch`,
+    );
+  } else if (isLinkedWorktree) {
+    git('config', '--worktree', 'core.hooksPath', hooks);
+    done.push(`core.hooksPath is ${hooks} in this worktree`);
   } else {
     git('config', 'core.hooksPath', hooks);
     done.push(`core.hooksPath is ${hooks}`);

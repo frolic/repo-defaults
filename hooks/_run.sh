@@ -1,14 +1,16 @@
-# Shared by the hooks in this folder. `run <script>` runs a package.json script if the repo has one,
-# with pnpm when the repo has pnpm-lock.yaml and npm otherwise, so a repo opts in to each step by
-# adding the script.
+# Shared by the hooks in this folder. `run <script> [args]` runs a package.json script with its
+# arguments if the repo has the script, with pnpm when the repo has pnpm-lock.yaml and npm
+# otherwise, so a repo opts in to each step by adding the script.
 [ -x "$HOME/bin/node" ] && PATH="$HOME/bin:$PATH"
 
 run() {
-  if node -e 'process.exit(require("./package.json").scripts?.[process.argv[1]] ? 0 : 1)' "$1" 2>/dev/null; then
+  script="$1"
+  shift
+  if node -e 'process.exit(require("./package.json").scripts?.[process.argv[1]] ? 0 : 1)' "$script" 2>/dev/null; then
     if [ -f pnpm-lock.yaml ]; then
-      pnpm run --silent "$1"
+      pnpm run --silent "$script" "$@"
     else
-      npm run --silent "$1"
+      npm run --silent "$script" -- "$@"
     fi
   fi
 }
