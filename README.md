@@ -11,7 +11,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 - [writing.md](writing.md): docs, comments, commit messages, and PR text, with a table of sentences to avoid.
 - [typescript.md](typescript.md): TypeScript style, API shape, comments, and file names.
 - [principles.md](principles.md): how to design a change.
-- [workflow.md](workflow.md): pull requests, which check runs where, and agent work.
+- [workflow.md](workflow.md): pull requests and their review, what needs the owner, which check runs where, the corrections log, and agent work.
 
 **Config**
 
@@ -32,10 +32,11 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 
 - `templates/github/workflows/`: a Checks workflow for `main` and the merge queue, and a Full suite workflow for releases.
 - `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks.
+- `templates/claude/corrections.md`: the log of the owner's corrections that the `retro` skill turns into checks.
 
 **Skills**
 
-- `skills/`: `setup-repo-defaults`, `prose-review`, `pr-review`, `codebase-review`, and `walkthrough`.
+- `skills/`: `setup-repo-defaults`, `prose-review`, `pr-review`, `codebase-review`, `walkthrough`, and `retro`.
 - `vendor/`: whole skill sets from [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock](https://github.com/mattpocock/skills), and [HumanLayer](https://github.com/humanlayer/skills), copied unchanged with git subtree.
 - `vendor.json`: where each set comes from, its upstream commit, and the skills linked by default.
 
