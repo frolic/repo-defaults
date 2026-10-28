@@ -31,6 +31,14 @@ function host() {
   return dir;
 }
 
+function linkedWorktree(dir: string) {
+  git(dir, 'commit', '--quiet', '--allow-empty', '-m', 'Start');
+  const worktree = join(realpathSync(mkdtempSync(join(tmpdir(), 'worktree-'))), 'host');
+  git(dir, 'worktree', 'add', '--quiet', worktree);
+  symlinkSync(root, join(worktree, 'repo-defaults'));
+  return worktree;
+}
+
 const init = (cwd: string) =>
   execFileSync(process.execPath, [join(root, 'src/init.ts')], { cwd, encoding: 'utf8' });
 
@@ -105,6 +113,32 @@ test('the hooks run the repo scripts and reject a bad commit message', () => {
       ['An app', 'that waits adds it'].join(' '),
     ),
   ).toThrow(/made-up actor/);
+});
+
+// A linked worktree shares .git/config with the main one, so core.hooksPath set there would point
+// every worktree at repo-defaults/hooks, including those whose branch doesn't have it.
+test('leaves the shared git config alone when run from a linked worktree', () => {
+  const dir = host();
+  const worktree = linkedWorktree(dir);
+  const output = init(worktree);
+
+  expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
+  expect(output).toContain('git hooks: this is a linked worktree');
+
+  git(dir, 'config', 'extensions.worktreeConfig', 'true');
+  init(worktree);
+  expect(git(worktree, 'config', 'core.hooksPath')).toBe('repo-defaults/hooks');
+  expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
+});
+
+test('finds the repo own hooks from a linked worktree', () => {
+  const dir = host();
+  git(dir, 'config', 'extensions.worktreeConfig', 'true');
+  writeFileSync(join(dir, '.git/hooks/commit-msg'), '#!/bin/sh\nexit 0\n');
+  const output = init(linkedWorktree(dir));
+
+  expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
+  expect(output).toContain(`git hooks: ${join(dir, '.git/hooks')} has commit-msg`);
 });
 
 test('refuses to run before repo-defaults is added', () => {

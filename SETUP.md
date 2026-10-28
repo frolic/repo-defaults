@@ -127,7 +127,11 @@ Pass `tables` for files whose tables quote sentences to avoid in the first colum
 git config core.hooksPath repo-defaults/hooks
 ```
 
-Add the same command as the package.json `prepare` script, so each clone sets it on `pnpm install`. The hooks:
+Add the same command as the package.json `prepare` script, so each clone sets it on `pnpm install`.
+
+Worktrees share one `.git/config`, so in a repo with linked worktrees this setting points every worktree at `repo-defaults/hooks`, and a worktree whose branch doesn't have repo-defaults yet runs no hooks. Run the command from the main worktree once repo-defaults is on its branch, or turn on per-worktree config with `git config extensions.worktreeConfig true` and run `git config --worktree core.hooksPath repo-defaults/hooks` in each worktree. init does the second when per-worktree config is on, and otherwise leaves a linked worktree alone. The `prepare` script doesn't check, so let it run in a linked worktree only after repo-defaults reaches the main branch.
+
+The hooks:
 
 - **pre-commit** runs the `check:staged` script.
 - **pre-push** checks that the lockfile matches each package.json, then runs `check` and `test:changed`. It holds a lock, so two worktrees don't push at once.
