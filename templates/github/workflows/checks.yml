@@ -1,6 +1,8 @@
-# Copied from repo-defaults (templates/github/workflows/checks.yml). Runs the checks and the tests on
-# each push to main and on each pull request in the merge queue, and never on a branch, because the
-# git hooks run the same checks before each push.
+# Copied from repo-defaults (templates/github/workflows/checks.yml). Runs the checks on each push to
+# main and on each pull request in the merge queue, and never on a branch, because the git hooks run
+# the same checks before each push. The tests are only those that the change since the last green
+# run on main affects, because the pre-push hook ran the tests that the branch affects. A run by hand
+# runs every test.
 name: Checks
 
 on:
@@ -10,6 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -24,6 +27,8 @@ jobs:
       - uses: actions/checkout@v5
         with:
           submodules: true
+          # test:changed diffs against an earlier commit, so it needs the history.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
@@ -31,4 +36,26 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
-      - run: pnpm test
+      # test:changed runs the tests affected by the diff from origin/main, so this points origin/main
+      # at the base: the head of the last green Checks run on main for a push, which also covers a
+      # push whose run was cancelled or failed, or the merge queue's base. With no base, or no
+      # test:changed script, every test runs.
+      - name: Test what changed since the base
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QUEUE_BASE: ${{ github.event.merge_group.base_sha }}
+        run: |
+          case "$GITHUB_EVENT_NAME" in
+            push) base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow checks.yml --branch main --event push --status success --limit 1 --json headSha --jq '.[0].headSha // empty') ;;
+            merge_group) base=$QUEUE_BASE ;;
+            *) base= ;;
+          esac
+          if [ -n "$base" ] && git merge-base --is-ancestor "$base" HEAD 2>/dev/null &&
+            node -e 'process.exit(require("./package.json").scripts?.["test:changed"] ? 0 : 1)'; then
+            echo "Testing what changed since $base"
+            git update-ref refs/remotes/origin/main "$base"
+            pnpm test:changed
+          else
+            echo "No base on this branch's history, so every test runs"
+            pnpm test
+          fi
