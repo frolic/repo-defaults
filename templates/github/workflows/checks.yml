@@ -46,7 +46,7 @@ jobs:
           QUEUE_BASE: ${{ github.event.merge_group.base_sha }}
         run: |
           case "$GITHUB_EVENT_NAME" in
-            push) base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow checks.yml --branch main --event push --status success --limit 1 --json headSha --jq '.[0].headSha // empty') ;;
+            push) base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow checks.yml --branch main --event push --status success --limit 1 --json headSha --jq '.[0].headSha // empty' || true) ;;
             merge_group) base=$QUEUE_BASE ;;
             *) base= ;;
           esac
