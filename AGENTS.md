@@ -14,7 +14,7 @@ This repo holds the rules and tooling that other repos include as a git submodul
 
 ## Rules for this repo
 
-- This repo is public. Keep private repos, projects, sites, and people out of its files, commit messages, pull requests, and comments: don't name them, link to them, or quote their code or numbers. Describe the case in general words, such as "a Vite site".
+- This repo is public. Keep private repos, projects, sites, and people out of its files, commit messages, pull requests, and comments: don't name them, link to them, or quote their code or numbers. Describe the use case instead, with an example: "a Vite app that imports `./styles.css`", not the project that has one.
 - Every file here is used by other repos, so a change changes them all on their next update. Keep rules generic: a rule that only one repo needs goes in that repo's AGENTS.md.
 - Keep each file usable from both a checkout and `node_modules`. Node runs the files in `src/` directly from a checkout, so relative imports in `src/` end in `.ts`, and `tsconfig.build.json` rewrites them to `.js` for `dist/`. Each module in `package.json` `exports` has a `src` condition for the checkout and `types` and `default` conditions for `dist/`.
 - `src/oxlint.ts` has no relative imports, because oxlint loads it on its own.
