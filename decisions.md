@@ -14,11 +14,11 @@ Choices made in this repo, with the options considered and the reason for each. 
 - **Trade-offs:** CI minutes cost money, and an agent that pushes often can start dozens of runs a day on its branches. The pre-commit and pre-push hooks catch most failures before a push, on the machine that made the change, but they test only what the diff affects. A merge queue runs the default suite before a change reaches `main`, so `main` stays green without a run per push. The full suite, with slow and end-to-end tests, takes too long for every merge.
 - **Chosen:** hooks run `check:staged` on commit and `check` and `test:changed` on push. CI runs `check` and `test` on `main`, in the merge queue, and by hand, and `test:full` runs by hand or before a release. The hooks call package scripts instead of commands, so each repo picks its own tools. `templates/claude/settings.json` denies starting or re-running a CI job and passing `--no-verify`.
 
-## Pull request previews deploy only by hand
+## Pull request previews are deployed only by hand
 
 - **Options:** deploy a preview on each push to a pull request; deploy one when a person starts the deploy workflow on the branch; no previews.
 - **Trade-offs:** a preview on each push costs a deploy and CI minutes for every push, and most pushes from an agent are never looked at. A preview by hand costs a click, and the workflow has to find the pull request from the branch, because `workflow_dispatch` doesn't carry a pull request number. Either way, the preview's stage has to be torn down when the pull request closes.
-- **Chosen:** the deploy workflow takes `workflow_dispatch` on the pull request's branch and deploys to a stage named for the open pull request, and `pull_request: closed` tears it down. `templates/github/pr-buttons.yml` puts a button for it on the pull request page.
+- **Chosen:** the deploy workflow takes `workflow_dispatch` on the pull request's branch and deploys to the open pull request's `pr-<number>` stage, and the same workflow tears it down on `pull_request: closed`. `templates/github/pr-buttons.yml` defines a button for it that the GitHub PR Buttons extension shows on the pull request page.
 
 ## Semicolons, 100 columns, and annotations on empty collections
 

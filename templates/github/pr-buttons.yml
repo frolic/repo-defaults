@@ -1,16 +1,14 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/frolic/github-pr-buttons/main/schema.json
-# Copied from repo-defaults (templates/github/pr-buttons.yml). Buttons in the pull request sidebar,
-# from the GitHub PR Buttons extension (https://github.com/frolic/github-pr-buttons). Each button
-# starts a workflow_dispatch run of a workflow on the pull request's branch.
+# Copied from repo-defaults (templates/github/pr-buttons.yml). The GitHub PR Buttons extension
+# (https://github.com/frolic/github-pr-buttons) shows these buttons in the pull request sidebar.
+# Each button starts a workflow_dispatch run of a workflow on the pull request's branch.
 buttons:
   - label: Run full suite
     workflow: full.yml
     description: Runs test:full on this branch, including the slow tests that Checks leaves out.
-  # If the repo deploys a preview of a pull request, add a button for the deploy workflow. The run
-  # finds the open pull request for its branch, deploys to a pr-<number> stage, and a
-  # `pull_request: closed` trigger in the same workflow tears the stage down.
+  # If you deploy pull request previews, add a button for the deploy workflow. The run finds the
+  # open pull request for its branch and deploys to its pr-<number> stage, and the same workflow
+  # tears the stage down on `pull_request: closed`.
   # - label: Deploy PR preview
   #   workflow: deploy.yml
   #   description: Deploys this branch to its pr-<number> stage. Closing the PR tears it down.
-  #   paths:
-  #     - 'sites/**'
