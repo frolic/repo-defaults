@@ -18,6 +18,7 @@ Follow these rules in every repo that includes repo-defaults. Read the `technica
 - No AI vocabulary (delve, crucial, leverage), no "not just X but Y", no forced groups of three, no em dashes, no filler or hedging, and no clipped fragments with arrows.
 - A commit message says why the change is made and what else was considered.
 - Keep docs, comments, commit messages, and PR bodies blameless and neutral. Describe what the code does and why, not who asked for it, approved it, or wrote it, and don't name people or private projects and apps. Write "an audit of three apps that use the library", not the apps' names.
+- Justify a change by what it does, not by where it came from. Leave out the review, request, repo, or thread that led to it. Write "The rule now allows `./styles.css`, which a bundler imports", not "A site that adopted the rule had 27 CSS imports it reported".
 
 Each row of this table is a pattern to avoid, not only the one sentence. When you or a reviewer finds a new pattern, add a row, using the real sentence where there is one. An example shows a pattern more clearly than a rule does, so add a row for each new pattern instead of only rewording a rule.
 
