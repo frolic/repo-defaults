@@ -1,6 +1,5 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/frolic/github-pr-buttons/main/schema.json
-# Copied from repo-defaults (templates/github/pr-buttons.yml). The GitHub PR Buttons extension
-# (https://github.com/frolic/github-pr-buttons) shows these buttons in the pull request sidebar.
+# Copied from repo-defaults (templates/github/pr-buttons.yml). The GitHub PR Buttons browser
+# extension shows these buttons in the pull request sidebar.
 # Each button starts a workflow_dispatch run of a workflow on the pull request's branch.
 buttons:
   - label: Run full suite

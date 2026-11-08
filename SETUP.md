@@ -180,4 +180,4 @@ To add buttons to the pull request page, copy the button file:
 cp repo-defaults/templates/github/pr-buttons.yml .github/pr-buttons.yml
 ```
 
-Its Run full suite button starts `full.yml` on the pull request's branch, through the [GitHub PR Buttons](https://github.com/frolic/github-pr-buttons) extension. If you deploy previews, uncomment the Deploy PR preview button, and make the deploy workflow take `workflow_dispatch` on the branch and tear the preview down on `pull_request: closed`, as workflow.md describes.
+Its Run full suite button starts `full.yml` on the pull request's branch, through the GitHub PR Buttons browser extension. If you deploy previews, uncomment the Deploy PR preview button, and make the deploy workflow take `workflow_dispatch` on the branch and tear the preview down on `pull_request: closed`, as workflow.md describes.
