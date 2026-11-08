@@ -82,6 +82,19 @@ test('adds to existing files and leaves the repo own hooks and settings alone', 
   expect(output).toContain('add the check:staged, check, test:changed, test:full scripts');
 });
 
+test('leaves the hooks to a hook manager', () => {
+  const dir = host();
+  writeFileSync(
+    join(dir, 'package.json'),
+    '{ "scripts": { "test": "vitest" }, "devDependencies": { "simple-git-hooks": "^2.13.0" } }\n',
+  );
+  const output = init(dir);
+
+  expect(JSON.parse(read(dir, 'package.json')).scripts).toEqual({ test: 'vitest' });
+  expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
+  expect(output).toContain('git hooks: the repo installs its hooks with simple-git-hooks');
+});
+
 test('the hooks run the repo scripts and reject a bad commit message', () => {
   const dir = host();
   writeFileSync(

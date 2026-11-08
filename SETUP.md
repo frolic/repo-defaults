@@ -159,3 +159,13 @@ cp repo-defaults/templates/github/workflows/*.yml .github/workflows/
 ```
 
 `checks.yml` runs `check` and `test` on each push to `main`, in the merge queue, and when started by hand. `full.yml` runs `test:full` when started by hand or called from a release workflow. Neither runs on a pull request, because the hooks already ran the checks before the push.
+
+The merge queue runs only if `main` has a ruleset with a merge queue that requires the Checks job. Add one in the repo's Settings, under Rules. If a workflow deploys, skip its deploy steps on `merge_group`.
+
+To add buttons to the pull request page, copy the button file:
+
+```sh
+cp repo-defaults/templates/github/pr-buttons.yml .github/pr-buttons.yml
+```
+
+Its Run full suite button starts `full.yml` on the pull request's branch, through the [GitHub PR Buttons](https://github.com/frolic/github-pr-buttons) extension. If you deploy previews, uncomment the Deploy PR preview button, and make the deploy workflow take `workflow_dispatch` on the branch and tear the preview down on `pull_request: closed`, as workflow.md describes.
