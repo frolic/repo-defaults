@@ -217,9 +217,15 @@ function allowsUndefined(type: Node): boolean {
   return type.type === 'TSUnionType' && (type['types'] as Node[]).some(allowsUndefined);
 }
 
+// The extensions a relative import may end in: the JavaScript that Node and browsers load as
+// written, and the assets that a bundler such as Vite imports, such as `./styles.css`.
+const importableExtension =
+  /\.(js|mjs|cjs|json|css|scss|sass|less|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf|wasm|txt|md|html|sql)$/;
+
 /**
- * Reports a relative import or re-export without the `.js` extension. Node and browsers resolve
- * the path as written, so `./utils` doesn't load after the build.
+ * Reports a relative import or re-export that doesn't end in `.js`, such as `./utils` or
+ * `./utils.ts`. Node and browsers resolve the path as written, so `./utils` doesn't load after the
+ * build. An import of an asset, such as `./styles.css`, keeps its extension.
  */
 const importExtension = {
   meta: {
@@ -236,7 +242,7 @@ const importExtension = {
       if (!path.startsWith('./') && !path.startsWith('../')) {
         return;
       }
-      if (/\.(js|json)$/.test(path) || path.includes('?')) {
+      if (importableExtension.test(path) || path.includes('?')) {
         return;
       }
       context.report({ node: source as never, messageId: 'importExtension' });

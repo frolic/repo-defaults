@@ -9,7 +9,7 @@ Follow these rules in every TypeScript repo that includes repo-defaults. Most of
 - Name a type parameter with a lowercase word that says what it holds, such as `chunk`, `value`, or `key`, not `T` or `Chunk`. `defaults/type-parameter-name` checks this.
 - Options objects are `options: Options = {}` and are typed in a `declare namespace` named after the function or class (`DecoderStream.Options`).
 - With `exactOptionalPropertyTypes`, write optional properties as `foo?: T | undefined`. `defaults/optional-undefined` checks this and fixes it.
-- Relative imports end in `.js` (`defaults/import-extension`). If Node runs the files directly from source, import the `.ts` file instead, turn the rule off for those files, and build with `rewriteRelativeImportExtensions`.
+- Relative imports end in `.js` (`defaults/import-extension`). An import of an asset that a bundler loads, such as `./styles.css`, keeps its own extension. If Node runs the files directly from source, import the `.ts` file instead, turn the rule off for those files, and build with `rewriteRelativeImportExtensions`.
 - Statements end with semicolons, and so do the statements in examples. oxfmt adds them to code (`semi: true` in the `fmt` settings), but it doesn't format examples in Markdown or JSDoc.
 - Every `if`, `else`, and loop body goes in braces, even a one-line early `return`, and so do the bodies in examples. The `curly` lint rule checks the code.
 - A helper that throws for an invalid value and otherwise returns nothing or the same value is named `assert*`, such as `assertSize` and `assertUint8Array`. A helper that also changes the value, such as trimming it or converting a domain to its A-label, is named for the change: `normalizeName`, `formatAddress`.

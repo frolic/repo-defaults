@@ -34,10 +34,17 @@ tester.run('import-extension', plugin.rules['import-extension'], {
     "export * from '../decode.js'",
     "import data from './fixture.json'",
     "const url = import('./image.png?url')",
+    "import './styles.css'",
+    "import { run } from './cli.mjs'",
   ],
   invalid: [
     { code: "import { a } from './a'", errors: [{ messageId: 'importExtension' }] },
     { code: "export { a } from '../a.ts'", errors: [{ messageId: 'importExtension' }] },
+    { code: "import { Page } from './page.tsx'", errors: [{ messageId: 'importExtension' }] },
+    {
+      code: "import { routes } from './routeTree.gen'",
+      errors: [{ messageId: 'importExtension' }],
+    },
     { code: "const a = import('./a')", errors: [{ messageId: 'importExtension' }] },
   ],
 });
