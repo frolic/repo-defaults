@@ -31,6 +31,7 @@ Include it as a git submodule at `repo-defaults/` or as a git dependency. Neithe
 **Templates**
 
 - `templates/github/workflows/`: a Checks workflow for `main` and the merge queue, and a Full suite workflow for releases.
+- `templates/github/pr-buttons.yml`: pull request buttons that run the full suite and deploy a preview.
 - `templates/claude/settings.json`: stops Claude Code from starting CI runs and from skipping hooks.
 
 **Skills**

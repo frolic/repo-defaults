@@ -26,6 +26,8 @@ CI minutes cost money, so each check runs as early and as narrowly as it can, an
 - Run end-to-end tests locally when a change can break them, but run only the ones that cover what changed, not the whole end-to-end suite.
 - Never start a CI run on a branch or a pull request to check it, and never re-run a CI job to see if it passes. Run the check locally instead.
 - `test` stays fast enough to run on every push to `main`. A slow test, such as a fuzz run with many cases, a benchmark, or a scale test, goes in `test:full`, or in its own script that you run when you work on that area.
+- CI runs in the merge queue only if `main` requires a merge queue. Without one, a pull request reaches `main` without a CI run. If a workflow deploys, skip its deploy steps in the merge queue, because the change isn't on `main` yet.
+- A pull request preview is deployed only when a person asks for one, never on each push. The deploy workflow takes `workflow_dispatch` on the pull request's branch, looks up the open pull request for that branch, and deploys to its `pr-<number>` stage. The same workflow runs on `pull_request: closed` and tears that stage down. `templates/github/pr-buttons.yml` defines a button for it, which the GitHub PR Buttons browser extension shows on the pull request page. `templates/claude/settings.json` stops agents from starting the workflow, so a person starts each preview.
 - The git hooks in `repo-defaults/hooks/` run these scripts, and skip a script the repo doesn't have. `templates/github/workflows/` holds a Checks workflow for `main` and the merge queue, and a Full suite workflow to run by hand or from a release workflow.
 
 ## Agent work

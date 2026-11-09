@@ -5,8 +5,9 @@
 // - CLAUDE.md imports the rule files, so Claude Code loads them as project instructions.
 // - AGENTS.md tells other agents to follow the same files.
 // - link-skills links the skills and agents.
-// - core.hooksPath points at the shared git hooks, unless the repo has hooks of its own, and the
-//   package.json prepare script sets it again in each clone.
+// - Unless the repo has hooks of its own or installs them with simple-git-hooks, husky, or
+//   lefthook, core.hooksPath points at the shared git hooks and the package.json prepare script
+//   sets it again in each clone.
 // - .claude/settings.json blocks starting a CI run and skipping the hooks, if the repo has none.
 // - tsconfig.json extends the strict preset, if the repo has no tsconfig.json yet.
 //
@@ -72,12 +73,46 @@ const git = (...args: string[]) => {
     return undefined;
   }
 };
+const manifest = read('package.json');
+const json =
+  manifest === undefined
+    ? undefined
+    : (JSON.parse(manifest) as {
+        scripts?: Record<string, string> | undefined;
+        dependencies?: Record<string, string> | undefined;
+        devDependencies?: Record<string, string> | undefined;
+      });
+// These tools write their own hooks into .git/hooks on install. With core.hooksPath set, git
+// stops reading .git/hooks, and simple-git-hooks writes into core.hooksPath instead and
+// overwrites the shared hooks.
+const hookManagerFiles = {
+  'simple-git-hooks': ['.simple-git-hooks.json', '.simple-git-hooks.js', '.simple-git-hooks.cjs'],
+  husky: ['.husky'],
+  lefthook: ['lefthook.yml', '.lefthook.yml', 'lefthook.yaml'],
+} satisfies Record<string, readonly string[]>;
+const hookManager = Object.entries(hookManagerFiles).find(
+  ([name, files]) =>
+    json?.dependencies?.[name] !== undefined ||
+    json?.devDependencies?.[name] !== undefined ||
+    files.some((file) => existsSync(join(host, file))),
+)?.[0];
+
 const hooks = `${prefix}/hooks`;
 const setHooks = `git config core.hooksPath ${hooks}`;
 const hooksPath = git('config', 'core.hooksPath');
 const gitHooks = git('rev-parse', '--git-path', 'hooks');
 if (gitHooks === undefined) {
   skipped.push('git hooks: not a git repo');
+} else if (hookManager !== undefined) {
+  if (hooksPath === hooks) {
+    git('config', '--unset', 'core.hooksPath');
+    done.push(`core.hooksPath is unset, because ${hookManager} installs the hooks`);
+  }
+  // lefthook passes git's arguments to a command as {1}, not $1.
+  const message = hookManager === 'lefthook' ? '{1}' : '"$1"';
+  skipped.push(
+    `git hooks: the repo installs its hooks with ${hookManager}, so call sh ${hooks}/pre-commit, sh ${hooks}/pre-push, and sh ${hooks}/commit-msg ${message} from the hooks that ${hookManager} installs`,
+  );
 } else if (hooksPath === hooks) {
   // Already set up.
 } else if (hooksPath) {
@@ -96,11 +131,18 @@ if (gitHooks === undefined) {
   }
 }
 
-const manifest = read('package.json');
-if (manifest !== undefined) {
-  const json = JSON.parse(manifest) as { scripts?: Record<string, string> | undefined };
+if (json !== undefined) {
   const scripts = json.scripts ?? {};
-  if (scripts['prepare'] === undefined) {
+  if (hookManager !== undefined) {
+    if (scripts['prepare'] === setHooks) {
+      const { prepare: _, ...rest } = scripts;
+      json.scripts = rest;
+      writeFileSync(join(host, 'package.json'), `${JSON.stringify(json, null, 2)}\n`);
+      done.push(`package.json prepare no longer sets core.hooksPath`);
+    } else if (scripts['prepare']?.includes(setHooks)) {
+      skipped.push(`package.json: remove \`${setHooks}\` from the prepare script`);
+    }
+  } else if (scripts['prepare'] === undefined) {
     json.scripts = { ...scripts, prepare: setHooks };
     writeFileSync(join(host, 'package.json'), `${JSON.stringify(json, null, 2)}\n`);
     done.push(`package.json prepare sets core.hooksPath, so each clone gets the hooks`);
@@ -142,7 +184,7 @@ const left = [
   ...skipped,
   'vite.config.ts or .oxlintrc.json: spread the fmt and lint settings',
   'a test that runs the prose checks',
-  `CI: copy ${prefix}/templates/github/workflows/ into .github/workflows/, and run CI only on main and in the merge queue`,
+  `CI: copy ${prefix}/templates/github/workflows/ into .github/workflows/, run CI only on main and in the merge queue, and check that main has a merge queue ruleset`,
 ];
 console.log(
   [

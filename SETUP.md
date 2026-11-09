@@ -135,6 +135,18 @@ Add the same command as the package.json `prepare` script, so each clone sets it
 
 A hook skips a script the repo doesn't have. If the repo has hooks of its own, call `repo-defaults/hooks/<name>` from them instead of setting `core.hooksPath`.
 
+Skip both commands if the repo installs its hooks with simple-git-hooks, husky, or lefthook. Those tools install their own hooks, and simple-git-hooks writes them into `core.hooksPath`, which overwrites the shared hooks. Call the shared hooks from the tool's hooks instead, as in this simple-git-hooks config:
+
+```json
+"simple-git-hooks": {
+  "pre-commit": "sh repo-defaults/hooks/pre-commit",
+  "pre-push": "sh repo-defaults/hooks/pre-push",
+  "commit-msg": "sh repo-defaults/hooks/commit-msg \"$1\""
+}
+```
+
+In lefthook, pass the message file as `{1}` instead of `"$1"`.
+
 ### 8. Package scripts
 
 [workflow.md](workflow.md#checks-and-ci) lists where each check runs. Define these scripts with your repo's tools:
@@ -159,3 +171,13 @@ cp repo-defaults/templates/github/workflows/*.yml .github/workflows/
 ```
 
 `checks.yml` runs `check` and `test` on each push to `main`, in the merge queue, and when started by hand. `full.yml` runs `test:full` when started by hand or called from a release workflow. Neither runs on a pull request, because the hooks already ran the checks before the push.
+
+`merge_group` fires only if `main` requires a merge queue, through a ruleset or a branch protection rule. Add a ruleset with a merge queue that requires the Checks job on the Rules page under the repo's Settings. If a workflow deploys, skip its deploy steps on `merge_group` with `if: github.event_name != 'merge_group'`, because the change isn't on `main` yet.
+
+To add buttons to the pull request page, copy the button file:
+
+```sh
+cp repo-defaults/templates/github/pr-buttons.yml .github/pr-buttons.yml
+```
+
+Its Run full suite button starts `full.yml` on the pull request's branch, through the GitHub PR Buttons browser extension. If you deploy previews, uncomment the Deploy PR preview button, and make the deploy workflow take `workflow_dispatch` on the branch and tear the preview down on `pull_request: closed`, as workflow.md describes.
