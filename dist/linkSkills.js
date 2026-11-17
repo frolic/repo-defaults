@@ -16,10 +16,12 @@
 // from the agent, and runs it only when a person types `/<name>`. For such a skill, link-skills
 // writes a folder instead of a link: its SKILL.md without that line, a link to each of the
 // skill's other files, and a `.link-skills` file that marks the folder as written here, so the
-// next run replaces it.
+// next run replaces it. The folder is written only under .agents/, which the `fmt` settings
+// ignore, and .claude/ links to it, so a formatter in a pre-commit hook never rewrites it.
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync, } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 const host = process.cwd();
+const agentsFolder = join(host, '.agents');
 // Node gives the real path of a package installed in node_modules, which for pnpm is inside
 // node_modules/.pnpm and changes with each version, so the links go through the package's own
 // node_modules entry instead.
@@ -89,16 +91,23 @@ function prune(target) {
             : stat.isSymbolicLink()
                 ? resolve(target, readlinkSync(entry))
                 : undefined;
-        if (source?.startsWith(`${here}/`) && !existsSync(source)) {
+        const isOurs = source?.startsWith(`${here}/`) || source?.startsWith(`${agentsFolder}/`);
+        if (source !== undefined && isOurs && !existsSync(source)) {
             rmSync(entry, { recursive: true });
         }
     }
 }
-// Puts `path` at `entry`: a link, or for a slash-command skill a folder that drops the flag.
+// Puts `path` at `entry`: a link, or for a slash-command skill a folder under .agents/ that drops
+// the flag, and a link to that folder under .claude/.
 function place(path, entry) {
     const skill = withoutFlag(path);
     if (skill === undefined) {
         symlinkSync(relative(dirname(entry), path), entry);
+        return;
+    }
+    if (!entry.startsWith(`${agentsFolder}/`)) {
+        const folder = join(agentsFolder, relative(join(host, '.claude'), entry));
+        symlinkSync(relative(dirname(entry), folder), entry);
         return;
     }
     mkdirSync(entry);
@@ -132,7 +141,8 @@ else {
         if (repeated !== undefined) {
             throw new Error(`Two ${kind} are named ${repeated}. Link only one of them.`);
         }
-        for (const base of ['.claude', '.agents']) {
+        // .agents first, because the .claude links point at the folders written there.
+        for (const base of ['.agents', '.claude']) {
             const target = join(host, base, kind);
             mkdirSync(target, { recursive: true });
             prune(target);

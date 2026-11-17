@@ -7,6 +7,7 @@ import {
   readFileSync,
   readlinkSync,
   realpathSync,
+  rmSync,
   symlinkSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -51,6 +52,19 @@ test('an agent can choose a skill that only a slash command could run', () => {
   expect(lstatSync(join(skill, 'playbooks')).isSymbolicLink()).toBe(true);
   expect(readlinkSync(join(skill, 'playbooks'))).not.toMatch(/^\//);
   expect(existsSync(join(skill, 'playbooks/bug-fix.md'))).toBe(true);
+  // The written folder sits under .agents/, which the format settings ignore.
+  expect(readlinkSync(skill)).toBe('../../.agents/skills/poteto-mode');
+  expect(lstatSync(join(dir, '.agents/skills/poteto-mode')).isDirectory()).toBe(true);
+});
+
+test('deletes the .claude link when its written folder is gone', () => {
+  const dir = host();
+  run(dir, 'poteto-mode');
+  rmSync(join(dir, '.agents/skills/poteto-mode'), { recursive: true });
+  run(dir);
+  expect(lstatSync(join(dir, '.claude/skills/poteto-mode'), { throwIfNoEntry: false })).toBe(
+    undefined,
+  );
 });
 
 test('deletes a link into repo-defaults whose skill is gone', () => {
