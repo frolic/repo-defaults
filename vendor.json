@@ -3,7 +3,7 @@
     "repo": "https://github.com/cursor/plugins",
     "ref": "main",
     "path": "pstack",
-    "commit": "99b609a72323b70204eab407c622f436e858e112",
+    "commit": "e1cc03121a0e71129a4fb730d7c5528a0a3e43c8",
     "link": {
       "skills": [
         "skills/architect",
@@ -33,7 +33,9 @@
         "skills/typescript-best-practices",
         "skills/unslop"
       ],
-      "agents": ["agents/comment-sicko.md"]
+      "agents": [
+        "agents/comment-sicko.md"
+      ]
     }
   },
   "mattpocock-skills": {
