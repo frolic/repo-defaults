@@ -101,7 +101,7 @@ The update script runs it again for you. It links each skill into `.claude/skill
 - **What it links:** everything in `skills/`, plus the `link` lists in `vendor.json`, which today hold the pstack skills for writing, design, review, and testing, and the pstack principles.
 - **Agents can choose them:** pstack marks each skill `disable-model-invocation: true`, so Claude Code hides it from the agent and runs it only when a person types `/<name>`. For a skill with that line, link-skills writes a folder instead of a link: the SKILL.md without the line, a link to each of the skill's other files, and a `.link-skills` file that marks the folder as its own. It writes the folder under `.agents/skills/` and links `.claude/skills/` to it, so keep `.agents/**` in your formatter's ignore list, as the `fmt` settings do. The agent then sees the skill's description and runs it when the work fits.
 - **Removed skills:** a link into repo-defaults whose skill is gone is deleted.
-- **More skills:** `--list` shows every vendored skill, and naming them links them too: `node repo-defaults/src/linkSkills.ts grill-me humanlayer-skills/rpi`.
+- **More skills:** `--list` shows every vendored skill, and naming them links them too: `node repo-defaults/src/linkSkills.ts grill-me humanlayer-skills/rpi`. Later runs, including the update's, keep a skill linked this way and write it again from the new copy, so you name it only once.
 - **Repeated names:** write `<source>/<skill>` when two sources have a skill with that name, such as `pstack/teach`.
 - **Your own copy:** a skill your repo keeps as a real folder is left alone.
 
