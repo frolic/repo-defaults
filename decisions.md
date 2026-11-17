@@ -38,11 +38,11 @@ Choices made in this repo, with the options considered and the reason for each. 
 - **Trade-offs:** the two repos these rules came from split on each of these. The newer conventions are the ones with semicolons, 100 columns, the annotation exceptions, and `nodenext`, and the other repo is moving to them.
 - **Chosen:** semicolons, 100 columns, the exceptions in `prefer-satisfies`, and the one `nodenext` preset. A repo can still override `fmt.semi` and `fmt.printWidth` after spreading `fmt`.
 
-## Other repos' skills are vendored with git subtree
+## Other repos' skills are vendored as a copy that a script replaces
 
-- **Options:** copy the files by hand and record the commit; a git submodule per repo; git subtree.
-- **Trade-offs:** a hand copy is slow to update and easy to get wrong. GitHub's tarballs leave out submodules, so a git dependency on this repo would install empty `vendor/` folders, and a host repo that uses this one as a submodule would need `--recursive` everywhere. git subtree stores the files as ordinary files, so both setups get them, and `git subtree pull` updates them. Splitting cursor/plugins down to `pstack/` keeps the other plugins in that repo out of this one.
-- **Chosen:** git subtree with `--squash`, run by `pnpm vendor`, which also records each source and its upstream commit in `vendor.json`. Every skill in a source is vendored, and `link-skills` links only the ones in `vendor.json`'s `link` lists, plus any named on its command line, because each linked skill's description is loaded into every session.
+- **Options:** copy the files by hand and record the commit; a git submodule per repo; git subtree; a script that replaces the copy.
+- **Trade-offs:** a hand copy is slow to update and easy to get wrong. GitHub's tarballs leave out submodules, so a git dependency on this repo would install empty `vendor/` folders, and a host repo that copies this one would get empty folders too. git subtree stores ordinary files, but `git subtree pull --squash` reads the commit that added the subtree, and a squash merge of the pull request that updates it leaves no such commit, so the next pull fails or conflicts. Copying only cursor/plugins' `pstack/` keeps the other plugins in that repo out of this one.
+- **Chosen:** `pnpm vendor` fetches the upstream commit, replaces `vendor/<name>` with its tree, or with one directory of it, and records the source and the commit in `vendor.json`, in one commit. It reads no history, so squash merges are safe. Every skill in a source is vendored, and `link-skills` links only the ones in `vendor.json`'s `link` lists, plus any named on its command line, because each linked skill's description is loaded into every session.
 
 ## The built JavaScript in `dist/` is committed
 

@@ -37,7 +37,7 @@ Include it as a copy committed at `repo-defaults/`, or as a git dependency. With
 **Skills**
 
 - `skills/`: `setup-repo-defaults`, `prose-review`, `pr-review`, `codebase-review`, and `walkthrough`.
-- `vendor/`: whole skill sets from [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock](https://github.com/mattpocock/skills), and [HumanLayer](https://github.com/humanlayer/skills), copied unchanged with git subtree.
+- `vendor/`: whole skill sets from [pstack](https://github.com/cursor/plugins/tree/main/pstack), [Matt Pocock](https://github.com/mattpocock/skills), and [HumanLayer](https://github.com/humanlayer/skills), copied unchanged by `pnpm vendor`.
 - `vendor.json`: where each set comes from, its upstream commit, and the skills linked by default.
 
 ## Change the defaults
@@ -59,7 +59,7 @@ pnpm vendor update                          # every source
 pnpm vendor update <name>                   # one source
 ```
 
-Each command is one squashed git subtree commit, and records the source and its commit in `vendor.json`. Run it with a clean working tree. `add` takes `--ref` for a branch other than `main`.
+Each command makes one commit for each source. The commit replaces `vendor/<name>` with the upstream files and records the source and its commit in `vendor.json`. Run it with a clean working tree. `add` takes `--ref` for a branch other than `main`.
 
 To link a vendored skill by default, add its path to that source's `link.skills` in `vendor.json`. Don't edit files under `vendor/<name>`, so each update applies cleanly. A host repo gets only the vendored folders that `files` in package.json lists, so add a new source's skill folder there.
 
