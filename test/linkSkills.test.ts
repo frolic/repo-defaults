@@ -9,6 +9,7 @@ import {
   realpathSync,
   rmSync,
   symlinkSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -55,6 +56,28 @@ test('an agent can choose a skill that only a slash command could run', () => {
   // The written folder sits under .agents/, which the format settings ignore.
   expect(readlinkSync(skill)).toBe('../../.agents/skills/poteto-mode');
   expect(lstatSync(join(dir, '.agents/skills/poteto-mode')).isDirectory()).toBe(true);
+});
+
+test('a run with no names writes again the skills an earlier run linked by name', () => {
+  const dir = host();
+  run(dir, 'poteto-mode');
+  const skill = join(dir, '.agents/skills/poteto-mode/SKILL.md');
+  writeFileSync(skill, 'stale');
+  run(dir);
+  expect(readFileSync(skill, 'utf8')).not.toBe('stale');
+  expect(existsSync(join(dir, '.claude/skills/poteto-mode/SKILL.md'))).toBe(true);
+});
+
+test('a listed skill replaces one of the same name that an earlier run linked by name', () => {
+  const dir = host();
+  // An earlier run linked mattpocock-skills/tdd by name, before vendor.json listed pstack/tdd.
+  mkdirSync(join(dir, '.agents/skills'), { recursive: true });
+  symlinkSync(
+    join(root, 'vendor/mattpocock-skills/skills/engineering/tdd'),
+    join(dir, '.agents/skills/tdd'),
+  );
+  run(dir);
+  expect(readFileSync(join(dir, '.agents/skills/tdd/.link-skills'), 'utf8')).toMatch(/pstack/);
 });
 
 test('deletes the .claude link when its written folder is gone', () => {

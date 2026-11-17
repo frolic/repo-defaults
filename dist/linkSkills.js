@@ -10,7 +10,8 @@
 // A vendored skill can be named as `<source>/<skill>` when two sources have one with that name.
 // Each link is relative, so it works in any clone. A skill or agent that the repo keeps as a real
 // file or folder is left alone, so the repo's own version is used. A link into repo-defaults
-// whose target is gone, such as a skill removed upstream, is deleted.
+// whose target is gone, such as a skill removed upstream, is deleted. A vendored skill that an
+// earlier run linked by name is linked again, so a run with no names keeps it current.
 //
 // pstack sets `disable-model-invocation: true` on its skills. Claude Code then hides the skill
 // from the agent, and runs it only when a person types `/<name>`. For such a skill, link-skills
@@ -80,22 +81,37 @@ function withoutFlag(path) {
     }
     return skill.slice(0, end + 1).replace(slashOnly, '') + skill.slice(end + 1);
 }
+// The path that `entry`, left by an earlier run, stands for, or undefined if the repo made it.
+function sourceOf(entry) {
+    const stat = lstatSync(entry);
+    const source = stat.isDirectory() && existsSync(join(entry, marker))
+        ? resolve(entry, readFileSync(join(entry, marker), 'utf8').trim())
+        : stat.isSymbolicLink()
+            ? resolve(dirname(entry), readlinkSync(entry))
+            : undefined;
+    const isOurs = source?.startsWith(`${here}/`) || source?.startsWith(`${agentsFolder}/`);
+    return isOurs ? source : undefined;
+}
 // Deletes what an earlier run left in `target` that now points at nothing in repo-defaults.
 function prune(target) {
     for (const name of readdirSync(target)) {
-        const entry = join(target, name);
-        const stat = lstatSync(entry);
-        const written = stat.isDirectory() && existsSync(join(entry, marker));
-        const source = written
-            ? resolve(entry, readFileSync(join(entry, marker), 'utf8').trim())
-            : stat.isSymbolicLink()
-                ? resolve(target, readlinkSync(entry))
-                : undefined;
-        const isOurs = source?.startsWith(`${here}/`) || source?.startsWith(`${agentsFolder}/`);
-        if (source !== undefined && isOurs && !existsSync(source)) {
-            rmSync(entry, { recursive: true });
+        const source = sourceOf(join(target, name));
+        if (source !== undefined && !existsSync(source)) {
+            rmSync(join(target, name), { recursive: true });
         }
     }
+}
+// The vendored skills or agents that an earlier run linked under .agents/, including ones named
+// on its command line, so that a run with no names, such as the update's, writes them again.
+function linked(kind) {
+    const target = join(agentsFolder, kind);
+    if (!existsSync(target)) {
+        return [];
+    }
+    return readdirSync(target).flatMap((name) => {
+        const source = sourceOf(join(target, name));
+        return source?.startsWith(`${vendor}/`) && existsSync(source) ? [source] : [];
+    });
 }
 // Puts `path` at `entry`: a link, or for a slash-command skill a folder under .agents/ that drops
 // the flag, and a link to that folder under .claude/.
@@ -126,12 +142,17 @@ if (args.includes('--list')) {
     }
 }
 else {
-    const skills = [
+    // A skill linked earlier is kept unless a listed or named one now has its name.
+    const withLinked = (listed, kind) => {
+        const names = new Set(listed.map((path) => basename(path)));
+        return [...new Set(listed), ...linked(kind).filter((path) => !names.has(basename(path)))];
+    };
+    const skills = withLinked([
         ...readdirSync(join(here, 'skills')).map((name) => join(here, 'skills', name)),
         ...Object.entries(sources).flatMap(([name, source]) => source.link.skills.map((path) => join(vendor, name, path))),
         ...args.map(find),
-    ];
-    const agents = Object.entries(sources).flatMap(([name, source]) => source.link.agents.map((path) => join(vendor, name, path)));
+    ], 'skills');
+    const agents = withLinked(Object.entries(sources).flatMap(([name, source]) => source.link.agents.map((path) => join(vendor, name, path))), 'agents');
     for (const [kind, paths] of [
         ['skills', skills],
         ['agents', agents],
