@@ -1,6 +1,6 @@
 ---
 name: setup-repo-defaults
-description: Set up a repo to use repo-defaults, or check that a repo's setup is complete. Use when someone asks to set up, add, or adopt repo-defaults, or after repo-defaults is added as a subtree or a git dependency. Also use it to move a repo off a repo-defaults submodule, or when its skills or rules don't load in a fresh clone or a cloud session.
+description: Set up a repo to use repo-defaults, or check that a repo's setup is complete. Use when someone asks to set up, add, or adopt repo-defaults, or after repo-defaults is added as a copy or a git dependency. Also use it to move a repo off a repo-defaults submodule, or when its skills or rules don't load in a fresh clone or a cloud session.
 ---
 
 # Set up repo-defaults
@@ -9,15 +9,17 @@ repo-defaults holds shared rules, config, checks, and skills. This skill wires t
 
 ## Step 1, Add repo-defaults
 
-If neither `repo-defaults/` nor `node_modules/repo-defaults` exists, add it as a subtree:
+If neither `repo-defaults/` nor `node_modules/repo-defaults` exists, commit a copy:
 
 ```sh
-git subtree add --prefix=repo-defaults https://github.com/frolic/repo-defaults main --squash
+git fetch --depth=1 https://github.com/frolic/repo-defaults main
+git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
+git commit -m "Add repo-defaults"
 ```
 
-Use the subtree unless the person asks for the git dependency. A subtree's files are committed, so every clone has them, and so does a cloud agent session, which loads CLAUDE.md and the skills before any setup could run.
+Use the copy unless the person asks for the git dependency. Its files are committed, so every clone has them, and so does a cloud agent session, which loads CLAUDE.md and the skills before any setup could run.
 
-If `git ls-files --stage repo-defaults` prints mode `160000`, repo-defaults is a submodule, and it is empty in a plain clone or a cloud session. Move it to a subtree with the commands in `SETUP.md` under "Moving from a submodule", and remove `submodules: true` from the repo's `actions/checkout` steps.
+If `git ls-files --stage repo-defaults` prints mode `160000`, repo-defaults is a submodule, and it is empty in a plain clone or a cloud session. Move it to a copy with the commands in `SETUP.md` under "Moving from a submodule", and remove `submodules: true` from the repo's `actions/checkout` steps.
 
 ## Step 2, Run init
 

@@ -1,5 +1,14 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readlinkSync, realpathSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readlinkSync,
+  realpathSync,
+  symlinkSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, test } from 'vite-plus/test';
@@ -22,15 +31,36 @@ test('links skills/, the vendor.json lists, and keeps the repo own copies', () =
   expect(resolve(join(dir, '.claude/skills'), readlinkSync(link))).toBe(
     join(root, 'skills/prose-review'),
   );
-  const unslop = readlinkSync(join(dir, '.agents/skills/unslop'));
-  expect(unslop).not.toMatch(/^\//);
-  expect(resolve(join(dir, '.agents/skills'), unslop)).toBe(
-    join(root, 'invocable/pstack/skills/unslop'),
-  );
-  expect(existsSync(join(dir, '.claude/skills/unslop/SKILL.md'))).toBe(true);
+  expect(existsSync(join(dir, '.agents/skills/unslop/SKILL.md'))).toBe(true);
   expect(existsSync(join(dir, '.claude/agents/comment-sicko.md'))).toBe(true);
   expect(existsSync(join(dir, '.claude/skills/tdd/SKILL.md'))).toBe(false);
   expect(existsSync(join(dir, '.claude/skills/grill-me'))).toBe(false);
+});
+
+test('an agent can choose a skill that only a slash command could run', () => {
+  const dir = host();
+  run(dir);
+  const skill = join(dir, '.claude/skills/poteto-mode');
+  run(dir, 'poteto-mode');
+
+  const source = readFileSync(join(root, 'vendor/pstack/skills/poteto-mode/SKILL.md'), 'utf8');
+  expect(source).toMatch(/^disable-model-invocation: true$/m);
+  expect(readFileSync(join(skill, 'SKILL.md'), 'utf8')).toBe(
+    source.replace('disable-model-invocation: true\n', ''),
+  );
+  expect(lstatSync(join(skill, 'playbooks')).isSymbolicLink()).toBe(true);
+  expect(readlinkSync(join(skill, 'playbooks'))).not.toMatch(/^\//);
+  expect(existsSync(join(skill, 'playbooks/bug-fix.md'))).toBe(true);
+});
+
+test('deletes a link into repo-defaults whose skill is gone', () => {
+  const dir = host();
+  mkdirSync(join(dir, '.claude/skills'), { recursive: true });
+  symlinkSync(join(root, 'skills/removed'), join(dir, '.claude/skills/removed'));
+  symlinkSync('/elsewhere/kept', join(dir, '.claude/skills/kept'));
+  run(dir);
+  expect(lstatSync(join(dir, '.claude/skills/removed'), { throwIfNoEntry: false })).toBe(undefined);
+  expect(lstatSync(join(dir, '.claude/skills/kept')).isSymbolicLink()).toBe(true);
 });
 
 test('links the vendored skills named on the command line', () => {

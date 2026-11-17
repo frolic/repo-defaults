@@ -8,12 +8,17 @@
 //   link-skills --list            prints every vendored skill
 //
 // A vendored skill can be named as `<source>/<skill>` when two sources have one with that name.
-// A vendored skill that only a slash command can run is linked through its copy in invocable/,
-// so agents can choose it too.
 // Each link is relative, so it works in any clone. A skill or agent that the repo keeps as a real
-// file or folder is left alone, so the repo's own version is used.
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, } from 'node:fs';
-import { basename, join, relative, resolve } from 'node:path';
+// file or folder is left alone, so the repo's own version is used. A link into repo-defaults
+// whose target is gone, such as a skill removed upstream, is deleted.
+//
+// pstack sets `disable-model-invocation: true` on its skills. Claude Code then hides the skill
+// from the agent, and runs it only when a person types `/<name>`. For such a skill, link-skills
+// writes a folder instead of a link: its SKILL.md without that line, a link to each of the
+// skill's other files, and a `.link-skills` file that marks the folder as written here, so the
+// next run replaces it.
+import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync, } from 'node:fs';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 const host = process.cwd();
 // Node gives the real path of a package installed in node_modules, which for pnpm is inside
 // node_modules/.pnpm and changes with each version, so the links go through the package's own
@@ -23,6 +28,8 @@ const here = import.meta.dirname.includes('/node_modules/')
     : resolve(import.meta.dirname, '..');
 const vendor = join(here, 'vendor');
 const sources = JSON.parse(readFileSync(join(here, 'vendor.json'), 'utf8'));
+const marker = '.link-skills';
+const slashOnly = /^disable-model-invocation:\s*true\s*\n/m;
 // Every directory under vendor/<source> that holds a SKILL.md, relative to vendor/.
 function vendoredSkills() {
     const found = [];
@@ -57,11 +64,51 @@ function find(name) {
     const names = matches.map((path) => `${path.split('/')[0]}/${skill}`);
     throw new Error(`More than one source has ${name}. Name one of ${names.join(', ')}.`);
 }
-// A vendored skill that only a typed slash command can run has a copy in invocable/ that an agent
-// can choose too, so the link goes to the copy. scripts/invocable.ts writes it.
-function invocable(path) {
-    const copy = join(here, 'invocable', relative(vendor, path));
-    return path.startsWith(`${vendor}/`) && existsSync(join(copy, 'SKILL.md')) ? copy : path;
+// The SKILL.md of `path` without the slash-command flag, or undefined if its frontmatter, the text
+// between the first two `---` lines, doesn't set the flag.
+function withoutFlag(path) {
+    const file = join(path, 'SKILL.md');
+    if (!existsSync(file)) {
+        return undefined;
+    }
+    const skill = readFileSync(file, 'utf8');
+    const end = skill.indexOf('\n---', 3);
+    if (!skill.startsWith('---\n') || end === -1 || !slashOnly.test(skill.slice(0, end + 1))) {
+        return undefined;
+    }
+    return skill.slice(0, end + 1).replace(slashOnly, '') + skill.slice(end + 1);
+}
+// Deletes what an earlier run left in `target` that now points at nothing in repo-defaults.
+function prune(target) {
+    for (const name of readdirSync(target)) {
+        const entry = join(target, name);
+        const stat = lstatSync(entry);
+        const written = stat.isDirectory() && existsSync(join(entry, marker));
+        const source = written
+            ? resolve(entry, readFileSync(join(entry, marker), 'utf8').trim())
+            : stat.isSymbolicLink()
+                ? resolve(target, readlinkSync(entry))
+                : undefined;
+        if (source?.startsWith(`${here}/`) && !existsSync(source)) {
+            rmSync(entry, { recursive: true });
+        }
+    }
+}
+// Puts `path` at `entry`: a link, or for a slash-command skill a folder that drops the flag.
+function place(path, entry) {
+    const skill = withoutFlag(path);
+    if (skill === undefined) {
+        symlinkSync(relative(dirname(entry), path), entry);
+        return;
+    }
+    mkdirSync(entry);
+    writeFileSync(join(entry, 'SKILL.md'), skill);
+    writeFileSync(join(entry, marker), `${relative(entry, path)}\n`);
+    for (const name of readdirSync(path)) {
+        if (name !== 'SKILL.md') {
+            symlinkSync(relative(entry, join(path, name)), join(entry, name));
+        }
+    }
 }
 const args = process.argv.slice(2);
 if (args.includes('--list')) {
@@ -74,7 +121,7 @@ else {
         ...readdirSync(join(here, 'skills')).map((name) => join(here, 'skills', name)),
         ...Object.entries(sources).flatMap(([name, source]) => source.link.skills.map((path) => join(vendor, name, path))),
         ...args.map(find),
-    ].map(invocable);
+    ];
     const agents = Object.entries(sources).flatMap(([name, source]) => source.link.agents.map((path) => join(vendor, name, path)));
     for (const [kind, paths] of [
         ['skills', skills],
@@ -85,20 +132,21 @@ else {
         if (repeated !== undefined) {
             throw new Error(`Two ${kind} are named ${repeated}. Link only one of them.`);
         }
-        for (const path of paths) {
-            for (const base of ['.claude', '.agents']) {
-                const target = join(host, base, kind);
-                const link = join(target, basename(path));
-                mkdirSync(target, { recursive: true });
-                const stat = lstatSync(link, { throwIfNoEntry: false });
-                if (stat) {
-                    if (!stat.isSymbolicLink()) {
-                        console.log(`Kept ${relative(host, link)}, which is not a link.`);
-                        continue;
-                    }
-                    rmSync(link);
+        for (const base of ['.claude', '.agents']) {
+            const target = join(host, base, kind);
+            mkdirSync(target, { recursive: true });
+            prune(target);
+            for (const path of paths) {
+                const entry = join(target, basename(path));
+                const stat = lstatSync(entry, { throwIfNoEntry: false });
+                if (stat?.isSymbolicLink() || (stat?.isDirectory() && existsSync(join(entry, marker)))) {
+                    rmSync(entry, { recursive: true });
                 }
-                symlinkSync(relative(target, path), link);
+                else if (stat) {
+                    console.log(`Kept ${relative(host, entry)}, which is not a link.`);
+                    continue;
+                }
+                place(path, entry);
             }
         }
     }

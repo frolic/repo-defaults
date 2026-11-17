@@ -9,7 +9,7 @@
 //   lefthook, core.hooksPath points at the shared git hooks and the package.json prepare script
 //   sets it again in each clone.
 // - With repo-defaults/ in the repo, the package.json repo-defaults:update script pulls the newest
-//   copy, and init says to switch repo-defaults/ to a subtree if it is a submodule.
+//   copy, and init says to switch repo-defaults/ to a copy if it is a submodule.
 // - .claude/settings.json blocks starting a CI run and skipping the hooks, if the repo has none.
 // - tsconfig.json extends the strict preset, if the repo has no tsconfig.json yet.
 //
@@ -26,7 +26,7 @@ const prefix = existsSync(join(host, 'repo-defaults/package.json'))
     : undefined;
 if (prefix === undefined) {
   throw new Error(
-    'Add repo-defaults first, as a git subtree at repo-defaults/ or as a git dependency. See SETUP.md.',
+    'Add repo-defaults first, as a copy at repo-defaults/ or as a git dependency. See SETUP.md.',
   );
 }
 const checkout = prefix === 'repo-defaults';
@@ -103,7 +103,7 @@ const hookManager = Object.entries(hookManagerFiles).find(
 // hooks don't load there.
 if (checkout && git('ls-files', '--stage', prefix)?.startsWith('160000')) {
   skipped.push(
-    `${prefix}/ is a submodule, which is empty in a plain clone: switch it to a subtree, as SETUP.md describes under "Moving from a submodule"`,
+    `${prefix}/ is a submodule, which is empty in a plain clone: switch it to a copy, as SETUP.md describes under "Moving from a submodule"`,
   );
 }
 

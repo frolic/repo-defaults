@@ -1,5 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vite-plus/test';
@@ -35,7 +43,7 @@ function repo(files: Record<string, string>) {
 
 const skill = (name: string) => `---\nname: ${name}\ndescription: A test skill.\n---\n`;
 
-test('update pulls the newest repo-defaults and links its new skills', () => {
+test('update replaces repo-defaults with the newest copy and relinks its skills', () => {
   const upstream = mkdtempSync(join(tmpdir(), 'upstream-'));
   git(upstream, 'init', '--quiet', '--initial-branch=main');
   commit(upstream, {
@@ -45,20 +53,34 @@ test('update pulls the newest repo-defaults and links its new skills', () => {
     'src/linkSkills.ts': readFileSync(join(root, 'src/linkSkills.ts'), 'utf8'),
     'skills/first/SKILL.md': skill('first'),
   });
+  // The copy arrives as a squash merge would leave it: one commit with no subtree metadata.
   const host = repo({ 'README.md': 'host' });
-  git(host, 'subtree', 'add', '--quiet', '--prefix=repo-defaults', upstream, 'main', '--squash');
+  git(host, 'fetch', '--quiet', upstream, 'main');
+  git(host, 'read-tree', '--prefix=repo-defaults/', '-u', 'FETCH_HEAD');
+  git(host, 'commit', '--quiet', '-m', 'Add repo-defaults');
+  const update = () =>
+    execFileSync(process.execPath, [join(host, 'repo-defaults/src/update.ts')], {
+      cwd: host,
+      env,
+      stdio: 'pipe',
+    });
+  update();
+  expect(existsSync(join(host, '.claude/skills/first/SKILL.md'))).toBe(true);
 
+  rmSync(join(upstream, 'skills/first'), { recursive: true });
   commit(upstream, { 'skills/second/SKILL.md': skill('second'), 'writing.md': 'new' });
-  execFileSync(process.execPath, [join(host, 'repo-defaults/src/update.ts')], {
-    cwd: host,
-    env,
-    stdio: 'pipe',
-  });
+  const before = git(host, 'rev-list', '--count', 'HEAD');
+  update();
 
   expect(readFileSync(join(host, 'repo-defaults/writing.md'), 'utf8')).toBe('new');
+  expect(existsSync(join(host, 'repo-defaults/skills/first'))).toBe(false);
   expect(existsSync(join(host, '.claude/skills/second/SKILL.md'))).toBe(true);
+  expect(lstatSync(join(host, '.claude/skills/first'), { throwIfNoEntry: false })).toBe(undefined);
   expect(git(host, 'status', '--porcelain')).toBe('');
-  expect(git(host, 'log', '-1', '--format=%s')).toBe('Link the skills from the new repo-defaults');
+  expect(Number(git(host, 'rev-list', '--count', 'HEAD'))).toBe(Number(before) + 1);
+  expect(git(host, 'log', '-1', '--format=%s')).toBe(
+    `Update repo-defaults to ${git(upstream, 'rev-parse', 'HEAD').slice(0, 12)}`,
+  );
 }, 60_000);
 
 test('update refuses a submodule', () => {

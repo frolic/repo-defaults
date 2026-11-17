@@ -11,7 +11,6 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { writeInvocable } from './invocable.ts';
 
 type Source = {
   repo: string;
@@ -32,11 +31,9 @@ function readManifest(): Record<string, Source> {
   return JSON.parse(readFileSync(manifest, 'utf8')) as Record<string, Source>;
 }
 
-// Records the sources, and rewrites invocable/ from the new vendor/ in the same commit.
 function writeManifest(sources: Record<string, Source>, message: string) {
   writeFileSync(manifest, `${JSON.stringify(sources, null, 2)}\n`);
-  writeInvocable(join(root, 'vendor'), join(root, 'invocable'));
-  git(['add', '--all', 'vendor.json', 'invocable']);
+  git(['add', 'vendor.json']);
   git(['commit', '--quiet', '-m', message]);
 }
 

@@ -11,5 +11,7 @@
     "sourceMap": false,
     "declarationMap": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  // update.ts runs only from a copy at repo-defaults/, never from node_modules.
+  "exclude": ["src/update.ts"]
 }

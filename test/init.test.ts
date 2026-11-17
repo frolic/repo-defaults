@@ -141,7 +141,7 @@ test('the hooks run the repo scripts and reject a bad commit message', () => {
   ).toThrow(/made-up actor/);
 });
 
-test('says to switch a submodule to a subtree', () => {
+test('says to switch a submodule to a copy', () => {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'host-')));
   git(dir, 'init', '--quiet');
   git(

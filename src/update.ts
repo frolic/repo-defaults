@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-// Pulls the newest repo-defaults into the repo in the current directory, then links the skills
-// again, so a skill added upstream is linked too.
+// Replaces repo-defaults/ in the repo in the current directory with the newest repo-defaults, then
+// links the skills again, so a skill added upstream is linked and a removed one is unlinked.
 //
-//   node repo-defaults/src/update.ts             pulls main
-//   node repo-defaults/src/update.ts <branch>    pulls another branch, such as one under review
+//   node repo-defaults/src/update.ts             takes main
+//   node repo-defaults/src/update.ts <branch>    takes another branch, such as one under review
 //
-// repo-defaults/ is a git subtree: ordinary files that every clone has, with no step to fetch
-// them. The pull is one squashed commit, and the links, if they changed, are a second. It needs a
-// clean working tree, because git subtree commits.
+// repo-defaults/ holds ordinary committed files, so every clone has them with no step to fetch
+// them. The update is one commit with the new files and the new links. It reads nothing from the
+// repo's history, so it works in a shallow clone and after a squash merge. Change repo-defaults
+// in its own repo, because the update replaces any edit made in the copy. It needs a clean
+// working tree.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -22,14 +24,14 @@ const git = (...args: string[]) =>
     stdio: ['ignore', 'pipe', 'inherit'],
   }).trim();
 
-// A submodule shows as one entry with mode 160000, and a subtree as ordinary files.
+// A submodule shows as one entry with mode 160000, and a copy as ordinary files.
 if (git('ls-files', '--stage', prefix).startsWith('160000')) {
   throw new Error(
-    `${prefix}/ is a submodule. Switch it to a subtree first, as SETUP.md describes under "Moving from a submodule".`,
+    `${prefix}/ is a submodule. Switch it to a copy first, as SETUP.md describes under "Moving from a submodule".`,
   );
 }
 if (git('status', '--porcelain')) {
-  throw new Error('Commit or stash your changes first, because git subtree commits.');
+  throw new Error('Commit or stash your changes first, because the update commits.');
 }
 
 const manifest = JSON.parse(readFileSync(join(host, prefix, 'package.json'), 'utf8')) as {
@@ -37,26 +39,20 @@ const manifest = JSON.parse(readFileSync(join(host, prefix, 'package.json'), 'ut
 };
 const repo = manifest.repository.url.replace(/^git\+/, '');
 const branch = process.argv[2] ?? 'main';
-const commit = git('ls-remote', repo, `refs/heads/${branch}`).split('\t')[0]!;
 
-git(
-  'subtree',
-  'pull',
-  '--quiet',
-  `--prefix=${prefix}`,
-  repo,
-  branch,
-  '--squash',
-  '-m',
-  `Update repo-defaults to ${commit.slice(0, 12)}`,
-);
+git('fetch', '--quiet', '--depth=1', repo, branch);
+const commit = git('rev-parse', 'FETCH_HEAD');
+git('rm', '-r', '--quiet', prefix);
+git('read-tree', `--prefix=${prefix}/`, '-u', 'FETCH_HEAD');
 
 execFileSync(process.execPath, [join(host, prefix, 'src/linkSkills.ts')], {
   cwd: host,
   stdio: 'inherit',
 });
-git('add', '--all', '.claude', '.agents');
-if (git('status', '--porcelain')) {
-  git('commit', '--quiet', '-m', 'Link the skills from the new repo-defaults');
+git('add', '--all', prefix, '.claude', '.agents');
+if (!git('status', '--porcelain')) {
+  console.log(`repo-defaults is already at ${commit}.`);
+} else {
+  git('commit', '--quiet', '-m', `Update repo-defaults to ${commit.slice(0, 12)}`);
+  console.log(`Updated repo-defaults to ${commit}.`);
 }
-console.log(`Updated repo-defaults to ${commit}.`);

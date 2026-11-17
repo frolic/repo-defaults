@@ -2,13 +2,10 @@ import { defineConfig } from 'vite-plus';
 import { fmt, lint } from './src/oxc.ts';
 
 export default defineConfig({
-  fmt: {
-    ...fmt,
-    ignorePatterns: [...fmt.ignorePatterns, 'dist/**', 'vendor/**', 'invocable/**', 'skills/**'],
-  },
+  fmt: { ...fmt, ignorePatterns: [...fmt.ignorePatterns, 'dist/**', 'vendor/**', 'skills/**'] },
   lint: {
     ...lint,
-    ignorePatterns: [...lint.ignorePatterns, 'dist/**', 'vendor/**', 'invocable/**', 'skills/**'],
+    ignorePatterns: [...lint.ignorePatterns, 'dist/**', 'vendor/**', 'skills/**'],
     overrides: [
       ...lint.overrides,
       {

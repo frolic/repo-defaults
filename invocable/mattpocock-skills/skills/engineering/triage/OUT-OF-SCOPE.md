@@ -1,1 +1,0 @@
-../../../../../vendor/mattpocock-skills/skills/engineering/triage/OUT-OF-SCOPE.md
