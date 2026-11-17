@@ -37,9 +37,7 @@
         "skills/typescript-best-practices",
         "skills/unslop"
       ],
-      "agents": [
-        "agents/comment-sicko.md"
-      ]
+      "agents": ["agents/comment-sicko.md"]
     }
   },
   "mattpocock-skills": {
