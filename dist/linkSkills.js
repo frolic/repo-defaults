@@ -142,19 +142,20 @@ if (args.includes('--list')) {
     }
 }
 else {
-    const skills = new Set([
+    // A skill linked earlier is kept unless a listed or named one now has its name.
+    const withLinked = (listed, kind) => {
+        const names = new Set(listed.map((path) => basename(path)));
+        return [...new Set(listed), ...linked(kind).filter((path) => !names.has(basename(path)))];
+    };
+    const skills = withLinked([
         ...readdirSync(join(here, 'skills')).map((name) => join(here, 'skills', name)),
         ...Object.entries(sources).flatMap(([name, source]) => source.link.skills.map((path) => join(vendor, name, path))),
-        ...linked('skills'),
         ...args.map(find),
-    ]);
-    const agents = new Set([
-        ...Object.entries(sources).flatMap(([name, source]) => source.link.agents.map((path) => join(vendor, name, path))),
-        ...linked('agents'),
-    ]);
+    ], 'skills');
+    const agents = withLinked(Object.entries(sources).flatMap(([name, source]) => source.link.agents.map((path) => join(vendor, name, path))), 'agents');
     for (const [kind, paths] of [
-        ['skills', [...skills]],
-        ['agents', [...agents]],
+        ['skills', skills],
+        ['agents', agents],
     ]) {
         const names = paths.map((path) => basename(path));
         const repeated = names.find((name, index) => names.indexOf(name) !== index);

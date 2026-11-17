@@ -68,6 +68,18 @@ test('a run with no names writes again the skills an earlier run linked by name'
   expect(existsSync(join(dir, '.claude/skills/poteto-mode/SKILL.md'))).toBe(true);
 });
 
+test('a listed skill replaces one of the same name that an earlier run linked by name', () => {
+  const dir = host();
+  // An earlier run linked mattpocock-skills/tdd by name, before vendor.json listed pstack/tdd.
+  mkdirSync(join(dir, '.agents/skills'), { recursive: true });
+  symlinkSync(
+    join(root, 'vendor/mattpocock-skills/skills/engineering/tdd'),
+    join(dir, '.agents/skills/tdd'),
+  );
+  run(dir);
+  expect(readFileSync(join(dir, '.agents/skills/tdd/.link-skills'), 'utf8')).toMatch(/pstack/);
+});
+
 test('deletes the .claude link when its written folder is gone', () => {
   const dir = host();
   run(dir, 'poteto-mode');
