@@ -49,7 +49,7 @@ test('update replaces repo-defaults with the newest copy and relinks its skills'
   commit(upstream, {
     'package.json': JSON.stringify({
       repository: { url: upstream },
-      files: ['src', 'skills', 'vendor.json', 'writing.md', '!skills/first/fixtures'],
+      files: ['dist', 'src', 'skills', 'vendor.json', 'writing.md', '!skills/first/fixtures'],
     }),
     'vendor.json': '{}\n',
     'src/update.ts': readFileSync(join(root, 'src/update.ts'), 'utf8'),
@@ -57,6 +57,7 @@ test('update replaces repo-defaults with the newest copy and relinks its skills'
     'skills/first/SKILL.md': skill('first'),
     'skills/first/fixtures/large.txt': 'fixture',
     'docs/guide.md': 'guide',
+    'dist/update.js': 'built',
   });
   // SETUP.md adds the copy by reading the whole tree into the index and running the update.
   const host = repo({ 'README.md': 'host' });

@@ -65,7 +65,9 @@ const isPacked = (path: string) =>
   }, always.has(path));
 const unpacked = git('ls-tree', '-r', '--name-only', 'FETCH_HEAD')
   .split('\n')
-  .filter((path) => !isPacked(path))
+  // A copy runs src/ directly, and dist/ only serves a git dependency. Many repos ignore dist/,
+  // and a hook that stages its files again, such as lint-staged, fails on an ignored path.
+  .filter((path) => !isPacked(path) || path.startsWith('dist/'))
   .map((path) => `${prefix}/${path}`);
 if (unpacked.length > 0) {
   execFileSync('git', ['--literal-pathspecs', 'rm', '-f', '--quiet', '--pathspec-from-file=-'], {
