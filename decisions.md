@@ -2,6 +2,18 @@
 
 Choices made in this repo, with the options considered and the reason for each. Newest first.
 
+## A repo includes repo-defaults as a git subtree, not a submodule
+
+- **Options:** keep the submodule and fetch it in a cloud environment's setup script; keep it and fetch it from a Claude Code session hook in the repo; a git subtree; the git dependency.
+- **Trade-offs:** a submodule is empty in a plain clone. A cloud agent session clones each repo without its submodules and starts Claude Code in the folder above the repos, so the repo's own session hooks never run there. With an empty folder, the `@repo-defaults/*.md` imports in CLAUDE.md load nothing and every skill link is broken. Measured with probe repos and `claude -p`: a session hook that fills the folder brings the skills back, but the imports stay missing, because Claude Code reads CLAUDE.md before the hook runs. A setup script works, but each person and each environment has to add it. The git dependency has the same gap until `pnpm install` runs. A subtree commits the files, so every clone has them, at about 5 MB per repo and one squashed commit per update.
+- **Chosen:** the subtree. `src/update.ts` pulls the newest `main` and links the skills again, init adds it as the `repo-defaults:update` script and reports a submodule, and SETUP.md says how to move off one. Look at this again if Claude Code starts running a repo's hooks or fetching submodules before it reads CLAUDE.md.
+
+## Linked skills that only a slash command could run are copied without that flag
+
+- **Options:** link the vendored skills as they are; edit the flag in `vendor/`; install the Claude Code port of pstack, which drops the flag; write a copy of each flagged skill without the flag, and link the copy.
+- **Trade-offs:** pstack sets `disable-model-invocation: true` on every skill. Claude Code then leaves the skill out of the list the agent picks from, so a linked pstack skill runs only when a person types its name, which never happens in agent work. Measured: of two otherwise identical skills, an agent listed only the one without the flag. An edit in `vendor/` conflicts with each update. The port routes every task through its own poteto-mode, whose rules on asking before acting differ from ours, and it trails upstream pstack by weeks. A copy costs about 80 small SKILL.md files, and the copy links every other file of the skill back to `vendor/`.
+- **Chosen:** `scripts/invocable.ts` writes `invocable/` when `pnpm vendor` runs, link-skills links the copy where one exists, and `test/invocable.test.ts` fails when the copy is stale. This replaces the reason given under "Other repos' skills are vendored with git subtree" that each linked skill's description loads into every session: until now, no pstack skill's did. The principles that our docs restate are linked too: attack the premise, exhaust the design space, never block on the human, and outcome-oriented execution.
+
 ## oxfmt formats Markdown and package.json, and doesn't sort package.json
 
 - **Options:** leave Markdown and package.json unformatted; format both with oxfmt's default, which sorts the keys of package.json; format both with `sortPackageJson: false`.

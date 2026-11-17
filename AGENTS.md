@@ -1,6 +1,6 @@
 # repo-defaults agent guide
 
-This repo holds the rules and tooling that other repos include as a git submodule at `repo-defaults/` or as a git dependency. Follow [writing.md](writing.md), [typescript.md](typescript.md), [principles.md](principles.md), and [workflow.md](workflow.md) here too. [README.md](README.md) shows how a repo includes each file. Log a choice the docs don't settle in [decisions.md](decisions.md).
+This repo holds the rules and tooling that other repos include as a git subtree at `repo-defaults/` or as a git dependency. Follow [writing.md](writing.md), [typescript.md](typescript.md), [principles.md](principles.md), and [workflow.md](workflow.md) here too. [README.md](README.md) shows how a repo includes each file. Log a choice the docs don't settle in [decisions.md](decisions.md).
 
 ## Commands
 
@@ -18,6 +18,6 @@ This repo holds the rules and tooling that other repos include as a git submodul
 - Keep each file usable from both a checkout and `node_modules`. Node runs the files in `src/` directly from a checkout, so relative imports in `src/` end in `.ts`, and `tsconfig.build.json` rewrites them to `.js` for `dist/`. Each module in `package.json` `exports` has a `src` condition for the checkout and `types` and `default` conditions for `dist/`.
 - `src/oxlint.ts` has no relative imports, because oxlint loads it on its own.
 - `src/` may use `node:*` modules. These files run in Node at development time and never in a host repo's published code.
-- Don't edit the files under `vendor/<name>`. Change them upstream, or keep a changed copy in `skills/`, and update the source with `pnpm vendor update`.
+- Don't edit the files under `vendor/<name>`. Change them upstream, or keep a changed copy in `skills/`, and update the source with `pnpm vendor update`. Don't edit `invocable/` either: `scripts/invocable.ts` writes it from `vendor/`, and `test/invocable.test.ts` fails when it is stale.
 - When a rule in writing.md or typescript.md gets a check, name the check in the rule.
 - `hooks/` are POSIX shell scripts that call package scripts by their names in workflow.md, so they work in any repo. Put a repo's own commands in its package scripts, not in the hooks.
