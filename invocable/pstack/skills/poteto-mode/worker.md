@@ -1,0 +1,1 @@
+../../../../vendor/pstack/skills/poteto-mode/worker.md

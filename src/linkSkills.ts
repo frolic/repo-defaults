@@ -8,6 +8,8 @@
 //   link-skills --list            prints every vendored skill
 //
 // A vendored skill can be named as `<source>/<skill>` when two sources have one with that name.
+// A vendored skill that only a slash command can run is linked through its copy in invocable/,
+// so agents can choose it too.
 // Each link is relative, so it works in any clone. A skill or agent that the repo keeps as a real
 // file or folder is left alone, so the repo's own version is used.
 import {
@@ -73,6 +75,13 @@ function find(name: string): string {
   throw new Error(`More than one source has ${name}. Name one of ${names.join(', ')}.`);
 }
 
+// A vendored skill that only a typed slash command can run has a copy in invocable/ that an agent
+// can choose too, so the link goes to the copy. scripts/invocable.ts writes it.
+function invocable(path: string): string {
+  const copy = join(here, 'invocable', relative(vendor, path));
+  return path.startsWith(`${vendor}/`) && existsSync(join(copy, 'SKILL.md')) ? copy : path;
+}
+
 const args = process.argv.slice(2);
 
 if (args.includes('--list')) {
@@ -86,7 +95,7 @@ if (args.includes('--list')) {
       source.link.skills.map((path) => join(vendor, name, path)),
     ),
     ...args.map(find),
-  ];
+  ].map(invocable);
   const agents = Object.entries(sources).flatMap(([name, source]) =>
     source.link.agents.map((path) => join(vendor, name, path)),
   );

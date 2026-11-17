@@ -25,7 +25,7 @@ test('links skills/, the vendor.json lists, and keeps the repo own copies', () =
   const unslop = readlinkSync(join(dir, '.agents/skills/unslop'));
   expect(unslop).not.toMatch(/^\//);
   expect(resolve(join(dir, '.agents/skills'), unslop)).toBe(
-    join(root, 'vendor/pstack/skills/unslop'),
+    join(root, 'invocable/pstack/skills/unslop'),
   );
   expect(existsSync(join(dir, '.claude/skills/unslop/SKILL.md'))).toBe(true);
   expect(existsSync(join(dir, '.claude/agents/comment-sicko.md'))).toBe(true);

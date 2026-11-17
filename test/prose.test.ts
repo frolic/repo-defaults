@@ -20,7 +20,12 @@ test('the prose in this repo follows writing.md', () => {
   const writing = join(root, 'writing.md');
   // prose.ts and this file quote the patterns in code and in their tests.
   const files = walk(root, {
-    skip: [join(root, 'vendor'), join(root, 'src/prose.ts'), join(root, 'test/prose.test.ts')],
+    skip: [
+      join(root, 'vendor'),
+      join(root, 'invocable'),
+      join(root, 'src/prose.ts'),
+      join(root, 'test/prose.test.ts'),
+    ],
   });
   expect(check(files, { root, tables: [writing], skip: { 'ruled-out-word': [writing] } })).toEqual(
     [],

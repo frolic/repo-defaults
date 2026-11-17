@@ -1,0 +1,1 @@
+../../../../../vendor/mattpocock-skills/skills/in-progress/setup-ts-deep-modules/dependency-cruiser.config.cjs
