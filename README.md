@@ -61,7 +61,7 @@ pnpm vendor update <name>                   # one source
 
 Each command is one squashed git subtree commit, and records the source and its commit in `vendor.json`. Run it with a clean working tree. `add` takes `--ref` for a branch other than `main`.
 
-To link a vendored skill by default, add its path to that source's `link.skills` in `vendor.json`. Don't edit files under `vendor/<name>`, so each update applies cleanly.
+To link a vendored skill by default, add its path to that source's `link.skills` in `vendor.json`. Don't edit files under `vendor/<name>`, so each update applies cleanly. A host repo gets only the vendored folders that `files` in package.json lists, so add a new source's skill folder there.
 
 ## Development
 

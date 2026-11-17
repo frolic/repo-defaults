@@ -47,17 +47,21 @@ test('update replaces repo-defaults with the newest copy and relinks its skills'
   const upstream = mkdtempSync(join(tmpdir(), 'upstream-'));
   git(upstream, 'init', '--quiet', '--initial-branch=main');
   commit(upstream, {
-    'package.json': JSON.stringify({ repository: { url: upstream } }),
+    'package.json': JSON.stringify({
+      repository: { url: upstream },
+      files: ['src', 'skills', 'vendor.json', 'writing.md', '!skills/first/fixtures'],
+    }),
     'vendor.json': '{}\n',
     'src/update.ts': readFileSync(join(root, 'src/update.ts'), 'utf8'),
     'src/linkSkills.ts': readFileSync(join(root, 'src/linkSkills.ts'), 'utf8'),
     'skills/first/SKILL.md': skill('first'),
+    'skills/first/fixtures/large.txt': 'fixture',
+    'docs/guide.md': 'guide',
   });
-  // The copy arrives as a squash merge would leave it: one commit with no subtree metadata.
+  // SETUP.md adds the copy by reading the whole tree into the index and running the update.
   const host = repo({ 'README.md': 'host' });
   git(host, 'fetch', '--quiet', upstream, 'main');
   git(host, 'read-tree', '--prefix=repo-defaults/', '-u', 'FETCH_HEAD');
-  git(host, 'commit', '--quiet', '-m', 'Add repo-defaults');
   const update = () =>
     execFileSync(process.execPath, [join(host, 'repo-defaults/src/update.ts')], {
       cwd: host,
@@ -65,7 +69,16 @@ test('update replaces repo-defaults with the newest copy and relinks its skills'
       stdio: 'pipe',
     });
   update();
+  expect(git(host, 'ls-files', 'repo-defaults').split('\n')).toEqual([
+    'repo-defaults/package.json',
+    'repo-defaults/skills/first/SKILL.md',
+    'repo-defaults/src/linkSkills.ts',
+    'repo-defaults/src/update.ts',
+    'repo-defaults/vendor.json',
+  ]);
+  expect(existsSync(join(host, 'repo-defaults/docs'))).toBe(false);
   expect(existsSync(join(host, '.claude/skills/first/SKILL.md'))).toBe(true);
+  expect(git(host, 'status', '--porcelain')).toBe('');
 
   rmSync(join(upstream, 'skills/first'), { recursive: true });
   commit(upstream, { 'skills/second/SKILL.md': skill('second'), 'writing.md': 'new' });

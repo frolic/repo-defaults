@@ -26,14 +26,14 @@ As a copy, which we recommend:
 ```sh
 git fetch --depth=1 https://github.com/frolic/repo-defaults main
 git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
-git commit -m "Add repo-defaults"
+node repo-defaults/src/update.ts
 ```
 
-This commits the files of repo-defaults into your repo. Every clone then has them with nothing to fetch, so the rules and skills load everywhere: on your machine, in CI, and in a cloud agent session. The git hooks also need `pnpm install`, as step 7 says. A submodule doesn't work for agents, because its folder is empty in a plain clone, and a cloud session clones without submodules. Claude Code reads CLAUDE.md and finds the skills before any hook could fetch the submodule, and a cloud session starts in the folder above the repos, where a repo's own hooks don't run.
+This commits the files of repo-defaults into your repo. The update script keeps only the files that `files` in its package.json lists, which are the same files a git dependency installs, and commits them. Every clone then has them with nothing to fetch, so the rules and skills load everywhere: on your machine, in CI, and in a cloud agent session. The git hooks also need `pnpm install`, as step 7 says. A submodule doesn't work for agents, because its folder is empty in a plain clone, and a cloud session clones without submodules. Claude Code reads CLAUDE.md and finds the skills before any hook could fetch the submodule, and a cloud session starts in the folder above the repos, where a repo's own hooks don't run.
 
 - **Update:** run `node repo-defaults/src/update.ts`, or `pnpm repo-defaults:update`, which init adds. It replaces `repo-defaults/` with the newest `main` and links the skills again, in one commit. It reads nothing from your history, so it works in a shallow clone and after a squash merge. Pass a branch name to try a branch of repo-defaults first.
 - **Edit:** change repo-defaults in its own repo, then update. The update replaces any edit made in your copy.
-- **Size:** about 8 MB of files, most of it the vendored skills. Each update adds one commit, and the history of repo-defaults stays out of your repo.
+- **Size:** about 1.4 MB of files, most of it the vendored skills. The copy leaves out the vendored repos' docs, images, and test fixtures, and the tests and scripts of repo-defaults itself. Each update adds one commit, and the history of repo-defaults stays out of your repo.
 
 As a git dependency:
 
@@ -208,9 +208,10 @@ If `repo-defaults/` is a submodule, which `node repo-defaults/src/init.ts` repor
 git submodule deinit -f repo-defaults
 git rm -f repo-defaults
 rm -rf .git/modules/repo-defaults
+git commit -m "Remove the repo-defaults submodule"
 git fetch --depth=1 https://github.com/frolic/repo-defaults main
 git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
-git commit -m "Replace the repo-defaults submodule with a copy"
+node repo-defaults/src/update.ts
 node repo-defaults/src/init.ts
 ```
 

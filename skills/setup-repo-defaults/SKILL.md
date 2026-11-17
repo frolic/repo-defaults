@@ -14,8 +14,10 @@ If neither `repo-defaults/` nor `node_modules/repo-defaults` exists, commit a co
 ```sh
 git fetch --depth=1 https://github.com/frolic/repo-defaults main
 git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
-git commit -m "Add repo-defaults"
+node repo-defaults/src/update.ts
 ```
+
+The update script keeps only the files that repo-defaults' package.json `files` lists, and commits them.
 
 Use the copy unless the person asks for the git dependency. Its files are committed, so every clone has them, and so does a cloud agent session, which loads CLAUDE.md and the skills before any setup could run.
 

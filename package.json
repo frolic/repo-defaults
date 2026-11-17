@@ -22,10 +22,18 @@
     "hooks",
     "templates",
     "skills",
-    "vendor",
     "writing.md",
     "typescript.md",
-    "vendor.json"
+    "principles.md",
+    "workflow.md",
+    "SETUP.md",
+    "vendor.json",
+    "vendor/*/LICENSE",
+    "vendor/pstack/skills",
+    "vendor/pstack/agents",
+    "vendor/mattpocock-skills/skills",
+    "vendor/humanlayer-skills/plugins",
+    "!vendor/pstack/skills/statechart/scripts/test"
   ],
   "bin": {
     "check-commit-message": "./dist/commitMessage.js",

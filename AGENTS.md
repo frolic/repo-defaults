@@ -16,6 +16,7 @@ This repo holds the rules and tooling that other repos include as a committed co
 
 - Every file here is used by other repos, so a change changes them all on their next update. Keep rules generic: a rule that only one repo needs goes in that repo's AGENTS.md.
 - Keep each file usable from both a checkout and `node_modules`. Node runs the files in `src/` directly from a checkout, so relative imports in `src/` end in `.ts`, and `tsconfig.build.json` rewrites them to `.js` for `dist/`. Each module in `package.json` `exports` has a `src` condition for the checkout and `types` and `default` conditions for `dist/`.
+- A host repo gets only the files that `files` in `package.json` lists, both as a copy and as a git dependency. Add a new file or folder that a host needs to that list, and leave out docs, images, and tests that no skill or script reads.
 - `src/oxlint.ts` has no relative imports, because oxlint loads it on its own.
 - `src/` may use `node:*` modules. These files run in Node at development time and never in a host repo's published code.
 - Don't edit the files under `vendor/<name>`. Change them upstream, or keep a changed copy in `skills/`, and update the source with `pnpm vendor update`.
