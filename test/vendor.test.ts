@@ -53,6 +53,9 @@ test('add vendors a directory of a repo, and update pulls its newest commit', ()
   expect(readFileSync(join(host, 'vendor/pack/skills/a/SKILL.md'), 'utf8')).toBe('one');
   expect(() => readFileSync(join(host, 'vendor/pack/other.md'))).toThrow(/ENOENT/);
 
+  // A squash merge leaves the vendored files in one commit with no record of how they came.
+  git(host, 'reset', '--quiet', '--soft', git(host, 'rev-list', '--max-parents=0', 'HEAD'));
+  git(host, 'commit', '--quiet', '--amend', '-m', 'Squash merge');
   const latest = commit(upstream, { 'pack/skills/a/SKILL.md': 'two' });
   vendor(host, 'update');
   expect(readFileSync(join(host, 'vendor/pack/skills/a/SKILL.md'), 'utf8')).toBe('two');

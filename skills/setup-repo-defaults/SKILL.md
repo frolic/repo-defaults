@@ -1,6 +1,6 @@
 ---
 name: setup-repo-defaults
-description: Set up a repo to use repo-defaults, or check that a repo's setup is complete. Use when someone asks to set up, add, or adopt repo-defaults, or after repo-defaults is added as a submodule or a git dependency.
+description: Set up a repo to use repo-defaults, or check that a repo's setup is complete. Use when someone asks to set up, add, or adopt repo-defaults, or after repo-defaults is added as a copy or a git dependency. Also use it to move a repo off a repo-defaults submodule, or when its skills or rules don't load in a fresh clone or a cloud session.
 ---
 
 # Set up repo-defaults
@@ -9,13 +9,19 @@ repo-defaults holds shared rules, config, checks, and skills. This skill wires t
 
 ## Step 1, Add repo-defaults
 
-If neither `repo-defaults/` nor `node_modules/repo-defaults` exists, ask which way to add it. Recommend the submodule, because edits to it can be tried in the repo right away:
+If neither `repo-defaults/` nor `node_modules/repo-defaults` exists, commit a copy:
 
 ```sh
-git submodule add https://github.com/frolic/repo-defaults repo-defaults
-git config submodule.recurse true
-git config push.recurseSubmodules on-demand
+git fetch --depth=1 https://github.com/frolic/repo-defaults main
+git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
+node repo-defaults/src/update.ts
 ```
+
+The update script keeps only the files that repo-defaults' package.json `files` lists, and commits them.
+
+Use the copy unless the person asks for the git dependency. Its files are committed, so every clone has them, and so does a cloud agent session, which loads CLAUDE.md and the skills before any setup could run.
+
+If `git ls-files --stage repo-defaults` prints mode `160000`, repo-defaults is a submodule, and it is empty in a plain clone or a cloud session. Move it to a copy with the commands in `SETUP.md` under "Moving from a submodule", and remove `submodules: true` from the repo's `actions/checkout` steps.
 
 ## Step 2, Run init
 
@@ -34,7 +40,7 @@ Run `node repo-defaults/src/init.ts` from the repo root, or `pnpm exec init-repo
   - `test:full`: everything, including the slow tests that `test` leaves out.
 - **Agent settings.** If the repo already had `.claude/settings.json`, add the `deny` rules from `templates/claude/settings.json` to it.
 - **Prose test.** Add a test that runs `check` from `src/prose.ts` over the repo's Markdown and source, as `SETUP.md` shows. Skip `repo-defaults/`, `vendor/`, and generated files.
-- **CI.** Copy `templates/github/workflows/` into `.github/workflows/`. If the repo already has workflows, change their triggers to `push` on `main`, `merge_group`, and `workflow_dispatch`, and drop `pull_request`. For the submodule, keep `submodules: true` on each `actions/checkout` step. Don't start a CI run to try it.
+- **CI.** Copy `templates/github/workflows/` into `.github/workflows/`. If the repo already has workflows, change their triggers to `push` on `main`, `merge_group`, and `workflow_dispatch`, and drop `pull_request`. Don't start a CI run to try it.
   - **Merge queue.** Run `gh api repos/<owner>/<repo>/rules/branches/main --jq '.[].type'`. The list covers rulesets only, so if `merge_queue` isn't in it, also check the branch protection rule for `main` on the Branches page under the repo's Settings. Without a merge queue, `merge_group` never fires, and a pull request reaches `main` without a CI run. Tell the person to add a ruleset for `main` with a merge queue that requires the Checks job, and link to the Rules page under the repo's Settings. Don't create the ruleset yourself.
   - **Deploys.** A workflow that runs on `merge_group` must not deploy: skip each deploy step with `if: github.event_name != 'merge_group'`, because a change in the queue isn't on `main` yet.
   - **Previews.** If a workflow deploys a preview of each pull request on `pull_request`, change it to `workflow_dispatch` on the pull request's branch, as workflow.md describes. Keep a `pull_request: closed` trigger that tears down the preview. Copy `templates/github/pr-buttons.yml` to `.github/pr-buttons.yml`, uncomment its Deploy PR preview button, and set its `workflow` to the deploy workflow's file name.
@@ -49,6 +55,10 @@ Read the repo's CLAUDE.md, AGENTS.md, and contributing docs, and compare each ru
 
 Then run the repo's format, lint, type check, and tests. A new lint finding is expected where the shared rules are stricter. Count the findings for each rule, and fix them only if the person asks, because the fixes can touch many files.
 
-## Step 5, Report
+## Step 5, Check from a fresh clone
 
-Reply with what was set up, the conflicts with a recommendation for each, and the count of new lint findings for each rule. Commit the setup as one change, separate from any lint fixes.
+Commit the setup, clone the repo into a temporary folder, and run the checks in `SETUP.md` step 11 there: `repo-defaults/` holds files, not a submodule; no skill link is broken; and `claude -p` lists the pstack principles. A check that passes only in your own clone doesn't count, because your clone may have files that a new one doesn't.
+
+## Step 6, Report
+
+Reply with what was set up, the result of each check from the fresh clone, the conflicts with a recommendation for each, and the count of new lint findings for each rule. Commit the setup as one change, separate from any lint fixes.

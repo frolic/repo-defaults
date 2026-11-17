@@ -8,6 +8,8 @@
 // - Unless the repo has hooks of its own or installs them with simple-git-hooks, husky, or
 //   lefthook, core.hooksPath points at the shared git hooks and the package.json prepare script
 //   sets it again in each clone.
+// - With repo-defaults/ in the repo, the package.json repo-defaults:update script pulls the newest
+//   copy, and init says to switch repo-defaults/ to a copy if it is a submodule.
 // - .claude/settings.json blocks starting a CI run and skipping the hooks, if the repo has none.
 // - tsconfig.json extends the strict preset, if the repo has no tsconfig.json yet.
 //
@@ -22,9 +24,9 @@ const prefix = existsSync(join(host, 'repo-defaults/package.json'))
         ? 'node_modules/repo-defaults'
         : undefined;
 if (prefix === undefined) {
-    throw new Error('Add repo-defaults first, as a submodule at repo-defaults/ or as a git dependency. See SETUP.md.');
+    throw new Error('Add repo-defaults first, as a copy at repo-defaults/ or as a git dependency. See SETUP.md.');
 }
-const submodule = prefix === 'repo-defaults';
+const checkout = prefix === 'repo-defaults';
 const rules = ['writing.md', 'typescript.md', 'principles.md', 'workflow.md'].map((name) => `${prefix}/${name}`);
 const done = [];
 const skipped = [];
@@ -51,7 +53,7 @@ if (imports.length) {
     writeFileSync(join(host, 'CLAUDE.md'), `${text}${imports.join('\n')}\n`);
     done.push(`CLAUDE.md imports ${imports.join(', ')}`);
 }
-const linkSkills = submodule
+const linkSkills = checkout
     ? join(host, prefix, 'src/linkSkills.ts')
     : join(host, prefix, 'dist/linkSkills.js');
 execFileSync(process.execPath, [linkSkills], { cwd: host, stdio: 'inherit' });
@@ -79,6 +81,11 @@ const hookManagerFiles = {
 const hookManager = Object.entries(hookManagerFiles).find(([name, files]) => json?.dependencies?.[name] !== undefined ||
     json?.devDependencies?.[name] !== undefined ||
     files.some((file) => existsSync(join(host, file))))?.[0];
+// A submodule is empty in a plain clone and in a cloud agent session, so the rules, skills, and
+// hooks don't load there.
+if (checkout && git('ls-files', '--stage', prefix)?.startsWith('160000')) {
+    skipped.push(`${prefix}/ is a submodule, which is empty in a plain clone: switch it to a copy, as SETUP.md describes under "Moving from a submodule"`);
+}
 const hooks = `${prefix}/hooks`;
 const setHooks = `git config core.hooksPath ${hooks}`;
 const hooksPath = git('config', 'core.hooksPath');
@@ -132,6 +139,12 @@ if (json !== undefined) {
     else if (!scripts['prepare'].includes(setHooks)) {
         skipped.push(`package.json: add \`${setHooks}\` to the prepare script`);
     }
+    const update = 'node repo-defaults/src/update.ts';
+    if (checkout && scripts['repo-defaults:update'] === undefined) {
+        json.scripts = { ...json.scripts, 'repo-defaults:update': update };
+        writeFileSync(join(host, 'package.json'), `${JSON.stringify(json, null, 2)}\n`);
+        done.push('package.json repo-defaults:update pulls the newest repo-defaults');
+    }
     const missing = ['check:staged', 'check', 'test:changed', 'test', 'test:full'].filter((name) => scripts[name] === undefined);
     if (missing.length) {
         skipped.push(`package.json: add the ${missing.join(', ')} scripts (see workflow.md)`);
@@ -146,7 +159,7 @@ if (!existsSync(settings)) {
 else if (!readFileSync(settings, 'utf8').includes('gh workflow run')) {
     skipped.push(`.claude/settings.json: add the deny rules from ${prefix}/templates/claude/settings.json`);
 }
-const preset = submodule
+const preset = checkout
     ? './repo-defaults/tsconfig/strict.json'
     : 'repo-defaults/tsconfig/strict.json';
 const tsconfig = read('tsconfig.json');

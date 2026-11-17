@@ -2,15 +2,16 @@
 
 ## Quick setup
 
-1. Add repo-defaults as a submodule or a git dependency, as in step 1 below.
+1. Add a copy of repo-defaults, as in step 1 below.
 2. Run `node repo-defaults/src/init.ts`, or `pnpm exec init-repo-defaults` for the git dependency. It does steps 2, 4, 5, 7, and 9 where nothing is in the way, and is safe to run again.
 3. Ask your agent to run the `setup-repo-defaults` skill. It merges the lint and format settings into your config, adds the prose test, and lists where your repo's rules disagree with these.
+4. Check the setup from a fresh clone, as in step 11.
 
 ## Each step
 
-Each step is independent, so take only the ones you want. The examples use the submodule paths. For a git dependency, swap in the paths from this table:
+Each step is independent, so take only the ones you want. The examples use the paths of the copy. For a git dependency, swap in the paths from this table:
 
-| For                 | Submodule                                 | Git dependency                          |
+| For                 | Copy                                      | Git dependency                          |
 | ------------------- | ----------------------------------------- | --------------------------------------- |
 | Modules             | `./repo-defaults/src/oxc.ts`              | `repo-defaults/oxc`                     |
 | tsconfig presets    | `./repo-defaults/tsconfig/strict.json`    | `repo-defaults/tsconfig/strict.json`    |
@@ -20,18 +21,19 @@ Each step is independent, so take only the ones you want. The examples use the s
 
 ### 1. Add repo-defaults
 
-As a submodule:
+As a copy, which we recommend:
 
 ```sh
-git submodule add https://github.com/frolic/repo-defaults repo-defaults
-git config submodule.recurse true
-git config push.recurseSubmodules on-demand
+git fetch --depth=1 https://github.com/frolic/repo-defaults main
+git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
+node repo-defaults/src/update.ts
 ```
 
-- `submodule.recurse` makes `pull`, `checkout`, and `switch` update the submodule too.
-- `push.recurseSubmodules on-demand` pushes a new repo-defaults commit before the commit that points at it, so you never push a pointer nobody else can fetch.
-- Clone with `git clone --recurse-submodules`, or run `git submodule update --init` after a plain clone.
-- In GitHub Actions, pass `submodules: true` to `actions/checkout`.
+This commits the files of repo-defaults into your repo. The update script keeps only the files that `files` in its package.json lists, which are the files a git dependency installs, minus the built `dist/` that a copy doesn't run. Then it commits them. Every clone then has them with nothing to fetch, so the rules and skills load everywhere: on your machine, in CI, and in a cloud agent session. The git hooks also need `pnpm install`, as step 7 says. A submodule doesn't work for agents, because its folder is empty in a plain clone, and a cloud session clones without submodules. Claude Code reads CLAUDE.md and finds the skills before any hook could fetch the submodule, and a cloud session starts in the folder above the repos, where a repo's own hooks don't run.
+
+- **Update:** run `node repo-defaults/src/update.ts`, or `pnpm repo-defaults:update`, which init adds. It replaces `repo-defaults/` with the newest `main` and links the skills again, in one commit. It reads nothing from your history, so it works in a shallow clone and after a squash merge. Pass a branch name to try a branch of repo-defaults first.
+- **Edit:** change repo-defaults in its own repo, then update. The update replaces any edit made in your copy.
+- **Size:** about 1.4 MB of files, most of it the vendored skills. The copy leaves out the vendored repos' docs, images, and test fixtures, and the tests and scripts of repo-defaults itself. Each update adds one commit, and the history of repo-defaults stays out of your repo.
 
 As a git dependency:
 
@@ -39,7 +41,7 @@ As a git dependency:
 pnpm add -D github:frolic/repo-defaults
 ```
 
-The built JavaScript in `dist/` is committed, so the install runs no build script.
+The built JavaScript in `dist/` is committed, so the install runs no build script. The files exist only after `pnpm install`, so a cloud agent session that doesn't install first has no rules or skills. Use the copy if agents work in the repo.
 
 ### 2. tsconfig
 
@@ -94,9 +96,11 @@ Follow the rules in repo-defaults/writing.md, repo-defaults/typescript.md, repo-
 node repo-defaults/src/linkSkills.ts
 ```
 
-Run it again after an update that adds a skill. It links each skill into `.claude/skills/` and `.agents/skills/`, and each agent into `.claude/agents/` and `.agents/agents/`. The links are relative, so they work in any clone.
+The update script runs it again for you. It links each skill into `.claude/skills/` and `.agents/skills/`, and each agent into `.claude/agents/` and `.agents/agents/`. The links are relative, so they work in any clone. Commit them.
 
-- **What it links:** everything in `skills/`, plus the `link` lists in `vendor.json`, which today hold the pstack skills for writing, design, review, and testing.
+- **What it links:** everything in `skills/`, plus the `link` lists in `vendor.json`, which today hold the pstack skills for writing, design, review, and testing, and the pstack principles.
+- **Agents can choose them:** pstack marks each skill `disable-model-invocation: true`, so Claude Code hides it from the agent and runs it only when a person types `/<name>`. For a skill with that line, link-skills writes a folder instead of a link: the SKILL.md without the line, a link to each of the skill's other files, and a `.link-skills` file that marks the folder as its own. It writes the folder under `.agents/skills/` and links `.claude/skills/` to it, so keep `.agents/**` in your formatter's ignore list, as the `fmt` settings do. The agent then sees the skill's description and runs it when the work fits.
+- **Removed skills:** a link into repo-defaults whose skill is gone is deleted.
 - **More skills:** `--list` shows every vendored skill, and naming them links them too: `node repo-defaults/src/linkSkills.ts grill-me humanlayer-skills/rpi`.
 - **Repeated names:** write `<source>/<skill>` when two sources have a skill with that name, such as `pstack/teach`.
 - **Your own copy:** a skill your repo keeps as a real folder is left alone.
@@ -181,3 +185,34 @@ cp repo-defaults/templates/github/pr-buttons.yml .github/pr-buttons.yml
 ```
 
 Its Run full suite button starts `full.yml` on the pull request's branch, through the GitHub PR Buttons browser extension. If you deploy previews, uncomment the Deploy PR preview button, and make the deploy workflow take `workflow_dispatch` on the branch and tear the preview down on `pull_request: closed`, as workflow.md describes.
+
+### 11. Check the setup
+
+Check from a fresh clone, because your own clone may have files that a new one doesn't:
+
+```sh
+git clone <your repo> /tmp/check && cd /tmp/check
+git ls-files --stage repo-defaults | head -1     # 100644 is a copy; 160000 is a submodule
+ls repo-defaults/writing.md                       # the rules that CLAUDE.md imports
+find -L .claude/skills .agents/skills -type l     # prints each broken skill link, so it should print nothing
+claude -p "List the skills whose names start with principle-" < /dev/null
+```
+
+The last command should list the pstack principles. If it lists none, the skills were linked by an older repo-defaults: run the update script.
+
+## Moving from a submodule
+
+If `repo-defaults/` is a submodule, which `node repo-defaults/src/init.ts` reports, switch it to a copy. Commit or stash your changes first.
+
+```sh
+git submodule deinit -f repo-defaults
+git rm -f repo-defaults
+rm -rf .git/modules/repo-defaults
+git commit -m "Remove the repo-defaults submodule"
+git fetch --depth=1 https://github.com/frolic/repo-defaults main
+git read-tree --prefix=repo-defaults/ -u FETCH_HEAD
+node repo-defaults/src/update.ts
+node repo-defaults/src/init.ts
+```
+
+Then remove `submodule.recurse` and `push.recurseSubmodules` from `.git/config` if you set them, drop `submodules: true` from each `actions/checkout` step, commit the links that init wrote, and check the setup as in step 11.

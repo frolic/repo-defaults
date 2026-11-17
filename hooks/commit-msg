@@ -2,4 +2,11 @@
 # Rejects a commit message that describes a made-up actor or has a list without a serial comma.
 set -e
 . "$(dirname "$0")/_run.sh"
-node "$(dirname "$0")/../dist/commitMessage.js" "$1"
+# A copy has no dist/ and runs the TypeScript. Node won't strip types under node_modules, so a
+# git dependency runs the built file.
+repo_defaults="$(dirname "$0")/.."
+if [ -f "$repo_defaults/dist/commitMessage.js" ]; then
+  node "$repo_defaults/dist/commitMessage.js" "$1"
+else
+  node "$repo_defaults/src/commitMessage.ts" "$1"
+fi

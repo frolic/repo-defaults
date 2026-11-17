@@ -75,6 +75,7 @@ test('adds to existing files and leaves the repo own hooks and settings alone', 
   expect(JSON.parse(read(dir, 'package.json')).scripts).toEqual({
     test: 'vitest',
     prepare: 'git config core.hooksPath repo-defaults/hooks',
+    'repo-defaults:update': 'node repo-defaults/src/update.ts',
   });
   expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
   expect(output).toContain('tsconfig.json: extend ./repo-defaults/tsconfig/strict.json');
@@ -90,7 +91,10 @@ test('leaves the hooks to a hook manager', () => {
   );
   const output = init(dir);
 
-  expect(JSON.parse(read(dir, 'package.json')).scripts).toEqual({ test: 'vitest' });
+  expect(JSON.parse(read(dir, 'package.json')).scripts).toEqual({
+    test: 'vitest',
+    'repo-defaults:update': 'node repo-defaults/src/update.ts',
+  });
   expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
   expect(output).toContain('git hooks: the repo installs its hooks with simple-git-hooks');
 });
@@ -105,7 +109,9 @@ test('undoes an earlier run that set core.hooksPath in a repo with a hook manage
   git(dir, 'config', 'core.hooksPath', 'repo-defaults/hooks');
   const output = init(dir);
 
-  expect(JSON.parse(read(dir, 'package.json')).scripts).toEqual({});
+  expect(JSON.parse(read(dir, 'package.json')).scripts).toEqual({
+    'repo-defaults:update': 'node repo-defaults/src/update.ts',
+  });
   expect(() => git(dir, 'config', 'core.hooksPath')).toThrow(/Command failed/);
   expect(output).toContain('sh repo-defaults/hooks/commit-msg {1}');
 });
@@ -134,6 +140,22 @@ test('the hooks run the repo scripts and reject a bad commit message', () => {
     ),
   ).toThrow(/made-up actor/);
 });
+
+test('says to switch a submodule to a copy', () => {
+  const dir = realpathSync(mkdtempSync(join(tmpdir(), 'host-')));
+  git(dir, 'init', '--quiet');
+  git(
+    dir,
+    '-c',
+    'protocol.file.allow=always',
+    'submodule',
+    'add',
+    '--quiet',
+    root,
+    'repo-defaults',
+  );
+  expect(init(dir)).toContain('repo-defaults/ is a submodule, which is empty in a plain clone');
+}, 60_000);
 
 test('refuses to run before repo-defaults is added', () => {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'host-')));
