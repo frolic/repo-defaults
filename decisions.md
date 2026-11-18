@@ -2,6 +2,12 @@
 
 Choices made in this repo, with the options considered and the reason for each. Newest first.
 
+## Four more skills are linked by default for questions and catch-ups
+
+- **Options:** leave them for each host to link by name in its `skills` script; link them by default.
+- **Trade-offs:** each linked skill adds its description to every session in every host. These four describe how an agent asks a person for a decision and reports back. `grilling` asks questions in numbered rounds, each with a recommendation. `codebase-design` designs an interface two ways before review. `domain-modeling` keeps a glossary of names as they are decided. `ketchup` writes a catch-up that opens with what waits on the person. These steps are the same in every repo, and `principle-never-block-on-the-human` is already linked by default.
+- **Chosen:** link `grilling`, `codebase-design`, and `domain-modeling` from mattpocock-skills, the first skills linked from that source, and `ketchup` from pstack. A host that linked any of them by name can drop the name from its `skills` script.
+
 ## A repo commits a copy of repo-defaults, not a submodule
 
 - **Options:** keep the submodule and fetch it in a cloud environment's setup script; keep it and fetch it from a Claude Code session hook in the repo; a git subtree; a plain copy that an update replaces; the git dependency.

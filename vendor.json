@@ -12,6 +12,7 @@
         "skills/correct",
         "skills/how",
         "skills/interrogate",
+        "skills/ketchup",
         "skills/no-comments",
         "skills/principle-attack-the-premise",
         "skills/principle-boundary-discipline",
@@ -45,7 +46,11 @@
     "ref": "main",
     "commit": "5863806dd4e15c63174bee4e7515a4256792ecfa",
     "link": {
-      "skills": [],
+      "skills": [
+        "skills/engineering/codebase-design",
+        "skills/engineering/domain-modeling",
+        "skills/productivity/grilling"
+      ],
       "agents": []
     }
   },
