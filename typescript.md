@@ -59,4 +59,5 @@ A comment that explains your own code is a sign the code needs a better name or 
 - Use end-to-end tests for performance too. Count what a user waits on, such as requests, round trips, and bytes over the wire, and assert the count, so a change that adds a request fails the test.
 - Write a unit test for small, pure logic, such as a parser, an encoder, or a function with many edge cases. A fake or in-memory version of a service can run the same suite as the real one, but it doesn't replace the end-to-end test.
 - Assert what a caller can observe. Read the `principle-test-behavior-not-implementation` skill before writing tests.
+- A test doesn't wait out a deploy's timeout, retry delay, or poll interval. Pass the test a shorter value, through the option or the subclass the code already has for it, so that a test of a 30 s time limit waits a few seconds. If the only way to pass one is a new public option, leave the wait and say so in the decision log.
 - A test that compares timings belongs with the benchmarks, because timing tests fail when the machine is loaded. Counts of requests and bytes don't depend on the machine, so they belong in the normal tests.
